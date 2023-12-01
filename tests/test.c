@@ -1,4 +1,4 @@
-#include "minhttp.h"
+#include "../minhttp.h"
 #include "ctdd.h"
 #include <string.h>
 
@@ -27,7 +27,5 @@ ctdd_test_suite(test_parse_request) {
 }
 
 int main() {
-
-  ctdd_run_suite(test_parse_request_first_line);
-  return 0;
+  ctdd_run_suite(test_parse_request);
 }
