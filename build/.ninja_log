@@ -1,5 +1,0 @@
-# ninja log v5
-2	23	1701461004525672933	CMakeFiles/test.dir/tests/test.c.o	2a9152e2e5445f3d
-1	32	1701461004537672933	CMakeFiles/minhttp.dir/minhttp.c.o	2a233e2bb7ef8c1c
-2	35	1701461004537672933	CMakeFiles/test.dir/tests/parse_request_simple_test.c.o	1c4a99d4efa6eca8
-32	108	1701461004609672935	libminhttp.a	2608c7444a05288b

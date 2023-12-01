@@ -1,4 +1,0 @@
-/home/asimos/Projects/minhttp/build/CMakeFiles/minhttp.dir
-/home/asimos/Projects/minhttp/build/CMakeFiles/test.dir
-/home/asimos/Projects/minhttp/build/CMakeFiles/edit_cache.dir
-/home/asimos/Projects/minhttp/build/CMakeFiles/rebuild_cache.dir
