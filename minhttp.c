@@ -11,13 +11,13 @@
 #define unlikely(x) (x)
 #endif
 
-#define CHECK_EOF() if(data == data_end) return NULL;
+#define CHECK_EOF() if(data == data_end || data == 0x00) return NULL;
 
 #define EXPECT_NO_CHECK(x) CHECK_EOF(); if(unlikely(*data != x)) return NULL; data++;
 
 #define EXPECT(x) CHECK_EOF(); EXPECT_NO_CHECK(x); if(data_end <= data) return NULL;
 
-#define UNTIL_NOT(x) for(; data != data_end && *data == x; data++);
+#define UNTIL_NOT(x) for(; data != data_end && *data == x; data++) CHECK_EOF();
 
 
 #define EXPECT_NEWLINE() do {\
@@ -148,10 +148,13 @@ char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
 char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version) {
   if(data_end < data) return NULL;
   data = _mh_parse_method(data, data_end - data, method);
+  if(!data) return NULL;
   UNTIL_NOT(' ');
   data = _mh_parse_path(data, data_end, path, path_len);
+  if(!data) return NULL;
   UNTIL_NOT(' ');
   data = _mh_parse_version(data, data_end, version);
+  if(!data) return NULL;
   EXPECT_NEWLINE();
 }
 
