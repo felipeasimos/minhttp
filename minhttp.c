@@ -158,44 +158,59 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   EXPECT_NEWLINE();
 }
 
-char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
+char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
   unsigned int header_counter = 0;
   for(; header_counter < *num_headers; header_counter++) {
     // look for ':'
     // if '\r' or '\n' is found, return NULL
-    char* first_non_space = NULL;
+    char* first_non_whitespace = NULL;
+    uint8_t carriage_offset = 0;
     headers[header_counter].header_key_begin = data;
     for(; data < data_end; data++) {
       CHECK_EOF();
       switch(*data) {
         // newline? then should be value with empty header name
-        case '\r': 
+        case '\r':
+          carriage_offset = 1;
         case '\n': {
-          if(!first_non_space) return data + 1;
+          if(!first_non_whitespace) {
+            *num_headers = header_counter;
+            // check for '\n' after '\r'
+            if(carriage_offset) {
+              if(data + 1 == data_end) return NULL;
+              if(*(data + 1) != '\n') return NULL;
+            }
+            return data + 1 + carriage_offset;
+          }
           headers[header_counter].header_key_len = 0;
-          headers[header_counter].header_value_len = data - headers[header_counter].header_key_begin;
-          headers[header_counter].header_value_begin = first_non_space;
+          headers[header_counter].header_key_begin = NULL;
+          headers[header_counter].header_value_len = data - first_non_whitespace - carriage_offset;
+          headers[header_counter].header_value_begin = first_non_whitespace;
           *num_headers = header_counter+1;
+          continue;
         }
         case ':': {
-          if(!first_non_space) return NULL;
+          if(!first_non_whitespace) return NULL;
           headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
+          data++;
           goto space_parsing;
         }
         case ' ': {
-          if(first_non_space) return NULL;
+          if(first_non_whitespace) return NULL;
           headers[header_counter].header_key_begin++;
           break;
         }
-        default:
-          first_non_space = data;
+        default: {
+          if(!first_non_whitespace) first_non_whitespace = data;
+        }
       }
     }
 space_parsing:
     // look for '\r' or '\n'
     UNTIL_NOT(' ');
     headers[header_counter].header_value_begin = data;
-    for(; data < data_end; data++) {
+    uint8_t goto_next_key = 0;
+    for(; data < data_end && !goto_next_key; data++) {
       CHECK_EOF();
       switch(*data) {
         case '\r': {
@@ -203,16 +218,24 @@ space_parsing:
           if(*(data+1) != '\n') return NULL;
           headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
           data++;
+          goto_next_key = 1;
           break;
         }
         case '\n': {
           headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+          goto_next_key = 1;
           break;
         }
       }
     }
   }
   *num_headers = header_counter;
+  return data;
+}
+
+char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
+  data = _mh_parse_headers(data, data_end, headers, num_headers);
+  if(!data) *num_headers = 0;
   return data;
 }
 

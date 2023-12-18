@@ -11,11 +11,15 @@ features:
 - [ ] parsers
     - [x] request first line parser
     - [x] header parser
-    - [ ] add tests for header parser and request first line parser from picohttpparser
-    - [ ] add CMakeLists.txt
+    - [x] add CMakeLists.txt
+    - [x] add tests for request first line from picohttpparser
+    - [ ] add tests for header parser  from picohttpparser
     - [ ] request parser
+    - [ ] add tests from request parser from picohttpparser
     - [ ] response first line parser
     - [ ] response parser
+    - [ ] parse only requested headers
+        - [ ] get max key len automatically
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
