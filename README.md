@@ -56,10 +56,10 @@ In `build/`: `./test` or `./test --quiet` (for no output on success)
 
 ![Header Parser State Machine](./header-parser-state-machine.svg)
 
-|        x           | Before First String | Before Key | First String | After Key | During Value | DONE  |
-|--------------------|---------------------|------------|--------------|-----------|--------------|-------|
-|Before First String |---------------------|   space    |--------------|-----------|--------------|newline|
-|Before Key          |---------------------|   space    |     other    |-----------|--------------|-------|
-|First String        |       newline       |------------|     other    |   colon   |--------------|-------|
-|After Key           |---------------------|------------|--------------|   space   |    other     |-------|
-|During Value        |       newline       |------------|--------------|-----------|    other     |-------|
+|        x           |      Before First String      | Before Key |       First String        |     After Key     |       During Value       |  DONE   |
+|--------------------|-------------------------------|------------|---------------------------|-------------------|--------------------------|---------|
+|Before First String |-------------------------------|   space    |---------------------------|-------------------|--------------------------| newline |
+|Before Key          |-------------------------------|   space    | other(start of key/value) |-------------------|--------------------------|---------|
+|First String        | newline(end of keyless value) |------------|           other           | colon(end of key) |--------------------------|---------|
+|After Key           |-------------------------------|------------|---------------------------|       space       |    other(start of value) |---------|
+|During Value        |            newline            |------------|---------------------------|-------------------|          other           |---------|
