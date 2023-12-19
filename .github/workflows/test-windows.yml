@@ -25,8 +25,4 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: |
-        tree
-        ls test.dir
-        ls ${{env.BUILD_TYPE}}
-        .\${{env.BUILD_TYPE}}\test.exe
+      run: .\${{env.BUILD_TYPE}}\test.exe
