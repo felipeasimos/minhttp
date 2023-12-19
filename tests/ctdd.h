@@ -18,9 +18,9 @@
   static unsigned long __ctdd_get_current_microseconds() {
     LARGE_INTEGER li;
     QueryPerformanceFrequency(&li);
-    double frequency = double(li.QuadPart)/1000000.0;
+    double frequency = ((double)li.QuadPart)/1000000.0;
     QueryPerformanceCounter(&li);
-    return li.QuadPart/frequency;
+    return (unsigned long)(li.QuadPart/frequency);
   }
 #endif
 #endif
