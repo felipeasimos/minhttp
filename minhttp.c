@@ -158,6 +158,21 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   EXPECT_NEWLINE();
 }
 
+enum __MH_HEADER_PARSER_STATE {
+  BEFORE_FIRST_SPACE,
+  BEFORE_KEY,
+  FIRST_STRING,
+  AFTER_KEY,
+  DURING_VALUE,
+};
+
+enum __MH_HEADER_PARSER_TOKEN {
+  SPACE,
+  COLON,
+  NEWLINE,
+  OTHER
+};
+
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
   unsigned int header_counter = 0;
   for(; header_counter < *num_headers; header_counter++) {

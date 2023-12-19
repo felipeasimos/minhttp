@@ -51,3 +51,15 @@ In `build/`: `./test` or `./test --quiet` (for no output on success)
     - [ ] add likely and unlikely in all appropriate jumps
     - [ ] parse only requested headers (`mh_parse_headers_set`)
         - [ ] get max key len automatically
+
+### Header Parse State Machine
+
+![Header Parser State Machine](./header-parser-state-machine.svg)
+
+        x           | Before First String | Before Key | First String | After Key | During Value | DONE  |
+--------------------|---------------------|------------|--------------|-----------|--------------|-------|
+Before First String |---------------------|   space    |--------------|-----------|--------------|newline|
+Before Key          |---------------------|   space    |     other    |-----------|--------------|-------|
+First String        |       newline       |------------|     other    |   colon   |--------------|-------|
+After Key           |---------------------|------------|--------------|   space   |    other     |-------|
+During Value        |       newline       |------------|--------------|-----------|    other     |-------|
