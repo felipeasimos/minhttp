@@ -58,8 +58,8 @@ In `build/`: `./test` or `./test --quiet` (for no output on success)
 
 |        x           |      Before First String      | Before Key |       First String        |     After Key     |       During Value       |  DONE   |
 |--------------------|-------------------------------|------------|---------------------------|-------------------|--------------------------|---------|
-|Before First String |-------------------------------|   space    |---------------------------|-------------------|--------------------------| newline |
-|Before Key          |-------------------------------|   space    | other(start of key/value) |-------------------|--------------------------|---------|
-|First String        | newline(end of keyless value) |------------|           other           | colon(end of key) |--------------------------|---------|
-|After Key           |-------------------------------|------------|---------------------------|       space       |    other(start of value) |---------|
-|During Value        |            newline            |------------|---------------------------|-------------------|          other           |---------|
+|Before First String |                               |   space    |                           |                   |                          | newline |
+|Before Key          |                               |   space    | other(start of key/value) |                   |                          |         |
+|First String        | newline(end of keyless value) |            |           other           | colon(end of key) |                          |         |
+|After Key           |                               |            |                           |       space       |    other(start of value) |         |
+|During Value        |            newline            |            |                           |                   |          other           |         |
