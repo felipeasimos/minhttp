@@ -1,7 +1,10 @@
 #include "minhttp.h"
 
+
 #define NULL 0
 #define uint8_t unsigned char
+
+#include <stdio.h>
 
 #define MIN(a, b) (a < b ? a : b)
 #if __GNUC__ >= 3
@@ -160,90 +163,137 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
 }
 
 enum __MH_HEADER_PARSER_STATE {
-  BEFORE_FIRST_SPACE,
-  BEFORE_KEY,
-  FIRST_STRING,
-  AFTER_KEY,
-  DURING_VALUE,
+  BEFORE_FIRST_SPACE = ' ',
+  BEFORE_KEY = 'k',
+  FIRST_STRING = 's',
+  AFTER_KEY = 'K',
+  DURING_VALUE = 'V',
+  DONE = 'D'
 };
 
 enum __MH_HEADER_PARSER_TOKEN {
-  SPACE,
-  COLON,
-  NEWLINE,
-  OTHER
+  SPACE = ' ',
+  COLON = ':',
+  NEWLINE = '\n',
+  OTHER = 'O',
+  ERROR = 0
 };
 
+inline __attribute__((always_inline)) char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
+  CHECK_EOF();
+  switch(*data) {
+    default: {
+      *token = OTHER;
+      return data + 1;
+    }
+    // newline
+    case '\r': {
+      if(data + 1 == data_end) return (void*)ERROR;
+      if(*(data + 1) != '\n') return (void*)ERROR;
+      data++;
+    }
+    case SPACE:
+    case NEWLINE:
+    case COLON: {}
+  }
+  *token = *data;
+  return data + 1;
+}
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
+  enum __MH_HEADER_PARSER_STATE state = BEFORE_FIRST_SPACE;
+  enum __MH_HEADER_PARSER_TOKEN token;
   unsigned int header_counter = 0;
-  for(; header_counter < *num_headers; header_counter++) {
-    // look for ':'
-    // if '\r' or '\n' is found, return NULL
-    char* first_non_whitespace = NULL;
-    uint8_t carriage_offset = 0;
-    headers[header_counter].header_key_begin = data;
-    for(; data < data_end; data++) {
-      CHECK_EOF();
-      switch(*data) {
-        // newline? then should be value with empty header name
-        case '\r':
-          carriage_offset = 1;
-        case '\n': {
-          if(!first_non_whitespace) {
-            *num_headers = header_counter;
-            // check for '\n' after '\r'
-            if(carriage_offset) {
-              if(data + 1 == data_end) return NULL;
-              if(*(data + 1) != '\n') return NULL;
-            }
-            return data + 1 + carriage_offset;
+  while(header_counter < *num_headers && state != DONE) {
+    char* next_data = NULL;
+    if(!(next_data = _mh_parse_headers_token(data, data_end, &token))) return NULL;
+    switch(state) {
+      case BEFORE_FIRST_SPACE: {
+        switch(token) {
+          case OTHER: {
+            state = FIRST_STRING;
+            headers[header_counter].header_key_begin = data;
+            break;
           }
-          headers[header_counter].header_key_len = 0;
-          headers[header_counter].header_key_begin = NULL;
-          headers[header_counter].header_value_len = data - first_non_whitespace - carriage_offset;
-          headers[header_counter].header_value_begin = first_non_whitespace;
-          *num_headers = header_counter+1;
-          continue;
+          case SPACE: {
+            state = BEFORE_KEY;
+            break;
+          }
+          case NEWLINE: {
+            state = DONE;
+            break;
+          }
+          default: return (void*)ERROR;
         }
-        case ':': {
-          if(!first_non_whitespace) return NULL;
-          headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
-          data++;
-          goto space_parsing;
-        }
-        case ' ': {
-          if(first_non_whitespace) return NULL;
-          headers[header_counter].header_key_begin++;
-          break;
-        }
-        default: {
-          if(!first_non_whitespace) first_non_whitespace = data;
-        }
+        break;
       }
-    }
-space_parsing:
-    // look for '\r' or '\n'
-    UNTIL_NOT(' ');
-    headers[header_counter].header_value_begin = data;
-    uint8_t goto_next_key = 0;
-    for(; data < data_end && !goto_next_key; data++) {
-      CHECK_EOF();
-      switch(*data) {
-        case '\r': {
-          if(data_end - data < 2) return NULL;
-          if(*(data+1) != '\n') return NULL;
-          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-          data++;
-          goto_next_key = 1;
-          break;
+      case BEFORE_KEY: {
+        switch(token) {
+          case SPACE: break;
+          case OTHER: {
+            state = FIRST_STRING;
+            headers[header_counter].header_key_begin = data;
+            break;
+          }
+          default: return (void*)ERROR;
         }
-        case '\n': {
-          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-          goto_next_key = 1;
-          break;
-        }
+        break;
       }
+      case FIRST_STRING: {
+        switch(token) {
+          // case NEWLINE: {
+          //   state = BEFORE_FIRST_SPACE;
+          //   headers[header_counter].header_value_begin = headers[header_counter].header_key_begin;
+          //   headers[header_counter].header_key_begin = NULL;
+          //   headers[header_counter].header_key_len = 0;
+          //   headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+          //   header_counter++;
+          //   break;
+          // }
+          case COLON: {
+            state = AFTER_KEY;
+            headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
+            break;
+          }
+          case OTHER: break;
+          default: return (void*)ERROR;
+        }
+        break;
+      }
+      case AFTER_KEY: {
+        switch(token) {
+          case SPACE: break;
+          case NEWLINE: {
+            state = BEFORE_FIRST_SPACE;
+            headers[header_counter].header_value_begin = NULL;
+            headers[header_counter].header_value_len = 0;
+            header_counter++;
+            break;
+          }
+          case OTHER: {
+            state = DURING_VALUE;
+            headers[header_counter].header_value_begin = data;
+            break;
+          }
+          default: return (void*)ERROR;
+        }
+        break;
+      }
+      case DURING_VALUE: {
+        switch(token) {
+          case NEWLINE:{
+            state = BEFORE_FIRST_SPACE;
+            headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+            header_counter++;
+            break;
+          }
+          case OTHER: break;
+          default: return (void*)ERROR;
+        }
+        break;
+      }
+      default: return (void*)ERROR;
     }
+    data = next_data;
   }
   *num_headers = header_counter;
   return data;
