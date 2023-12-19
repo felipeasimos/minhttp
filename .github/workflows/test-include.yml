@@ -1,0 +1,13 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: No Dependencies
+run-name: Testing push to ${{ github.ref }} by @${{ github.actor }}
+on: [push]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check only minhttp.h is included
+      working-directory: ${{github.workspace}}
+      run: ! find -maxdepth 1 -name "*.[hc]" -exec grep -E "^#include" {} + | cut -d ':' -f 2 | grep -v "#include \"minhttp.h\""

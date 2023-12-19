@@ -1,6 +1,7 @@
 #include "minhttp.h"
-#include <stdint.h>
-#include <stddef.h>
+
+#define NULL 0
+#define uint8_t unsigned char
 
 #define MIN(a, b) (a < b ? a : b)
 #if __GNUC__ >= 3
