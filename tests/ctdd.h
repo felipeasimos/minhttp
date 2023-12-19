@@ -42,8 +42,8 @@ typedef struct __CTDD_SUITE_VARS {
 
 static struct __CTDD_SUITE_VARS __ctdd_suite_vars = {0};
 
-static void (*__ctdd_setup)(void) = NULL;
-static void (*__ctdd_teardown)(void) = NULL;
+static void (*__ctdd_setup)() = NULL;
+static void (*__ctdd_teardown)() = NULL;
 static int __ctdd_quiet = 0;
 
 #define ctdd_set_quiet(value) __ctdd_quiet = !!value
