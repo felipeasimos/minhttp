@@ -43,4 +43,5 @@ unsigned int* num_headers - number of headers in array. Will return the number o
  */
 char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers);
 
-char* mh_parse_request(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version, mh_header* headers, unsigned int* num_headers);
+// like 'mh_parse_headers', but only the keys pointed by the structs in 'headers' get their values parsed
+char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, unsigned int* num_headers);

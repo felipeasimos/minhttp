@@ -50,6 +50,7 @@ ctdd_test(parse_request_first_line_tab_in_method_test) {
 ctdd_test(parse_request_first_line_invalid_method_test) {
   char* data = mh_parse_request_first_line(invalid_method_example, invalid_method_example + strlen(invalid_method_example), &method, path, &path_len, &version);
   ctdd_assert(data == NULL, "return addr is wrong");
+
 }
 
 
@@ -73,7 +74,7 @@ ctdd_test(parse_headers_partial_test) {
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
-ctdd_test(parse_headers_test_headers_example) {
+ctdd_test(parse_headers_test_headers_example_test) {
   char* data = mh_parse_headers(test_headers_example + 20, test_headers_example + strlen(test_headers_example), headers, &num_headers);
   ctdd_assert(data == test_headers_example + strlen(test_headers_example), "data is wrong");
   ctdd_assert(num_headers == 2, "num_headers is wrong");
@@ -83,24 +84,58 @@ ctdd_test(parse_headers_test_headers_example) {
   ctdd_assert(headers[0].header_value_len == strlen("example.com"), "header[0] value len is wrong");
   ctdd_assert(strncmp(headers[0].header_value_begin, "example.com", headers[0].header_value_len) == 0, "header[0] value is wrong");
 
-  printf("%d\n", headers[1].header_value_len);
-  fflush(stdout);
   ctdd_assert(headers[1].header_key_len == strlen("Cookie"), "header[1] key len is wrong");
   ctdd_assert(strncmp(headers[1].header_key_begin, "Cookie", headers[1].header_key_len) == 0, "header[1] key is wrong");
   ctdd_assert(headers[1].header_value_len == 0, "header[1] value len is wrong");
   ctdd_assert(strncmp(headers[1].header_value_begin, "", headers[1].header_value_len) == 0, "header[1] value is wrong");
 }
 
-// char* partial_example = "GET / HTTP/1.0\r\n\r";
-// char* test_headers_example = "GET /hoge HTTP/1.1\r\nHost: example.com\r\nCookie: \r\n\r\n";
-// char* multibyte_example = "GET /hoge HTTP/1.1\r\nHost: example.com\r\nUser-Agent: \343\201\262\343/1.0\r\n\r\n";
+ctdd_test(parse_headers_multibyte_example_test) {
+  char* data = mh_parse_headers(multibyte_example + 20, multibyte_example + strlen(multibyte_example), headers, &num_headers);
+  ctdd_assert(data == multibyte_example + strlen(multibyte_example), "data is wrong");
+  ctdd_assert(num_headers == 2, "num_headers is wrong");
+
+  ctdd_assert(headers[0].header_key_len == strlen("Host"), "header[0] key len is wrong");
+  ctdd_assert(strncmp(headers[0].header_key_begin, "Host", headers[0].header_key_len) == 0, "header[0] key is wrong");
+  ctdd_assert(headers[0].header_value_len == strlen("example.com"), "header[0] value len is wrong");
+  ctdd_assert(strncmp(headers[0].header_value_begin, "example.com", headers[0].header_value_len) == 0, "header[0] value is wrong");
+
+  ctdd_assert(headers[1].header_key_len == strlen("User-Agent"), "header[1] key len is wrong");
+  ctdd_assert(strncmp(headers[1].header_key_begin, "User-Agent", headers[1].header_key_len) == 0, "header[1] key is wrong");
+  ctdd_assert(headers[1].header_value_len == strlen("\343\201\262\343/1.0"), "header[1] value len is wrong");
+  ctdd_assert(strncmp(headers[1].header_value_begin, "\343\201\262\343/1.0", headers[1].header_value_len) == 0, "header[1] value is wrong");
+}
+
+ctdd_test(parse_headers_multiline_example_test) {
+  char* data = mh_parse_headers(multiline_example + 16, multiline_example + strlen(multiline_example), headers, &num_headers);
+  ctdd_assert(data == multiline_example + strlen(multiline_example), "data is wrong");
+  ctdd_assert(num_headers == 3, "num_headers is wrong");
+
+  ctdd_assert(headers[0].header_key_len == strlen("foo"), "header[0] key len is wrong");
+  ctdd_assert(strncmp(headers[0].header_key_begin, "foo", headers[0].header_key_len) == 0, "header[0] key is wrong");
+  ctdd_assert(headers[0].header_value_len == strlen(""), "header[0] value len is wrong");
+  ctdd_assert(strncmp(headers[0].header_value_begin, "", headers[0].header_value_len) == 0, "header[0] value is wrong");
+
+  ctdd_assert(headers[1].header_key_len == strlen("foo"), "header[1] key len is wrong");
+  ctdd_assert(strncmp(headers[1].header_key_begin, "foo", headers[1].header_key_len) == 0, "header[1] key is wrong");
+  ctdd_assert(headers[1].header_value_len == strlen("b"), "header[1] value len is wrong");
+  ctdd_assert(strncmp(headers[1].header_value_begin, "b", headers[1].header_value_len) == 0, "header[1] value is wrong");
+
+  ctdd_assert(headers[2].header_key_len == 0, "header[2] key len is wrong");
+  ctdd_assert(headers[2].header_key_begin == NULL, "header[2] key is wrong");
+  ctdd_assert(headers[2].header_value_len == strlen("tc"), "header[2] value len is wrong");
+  ctdd_assert(strncmp(headers[2].header_value_begin, "tc", headers[2].header_value_len) == 0, "header[2] value is wrong");
+}
+
 // char* multiline_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
 // char* trailing_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
 
 ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_simple_test);
   ctdd_run_test(parse_headers_partial_test);
-  ctdd_run_test(parse_headers_test_headers_example);
+  ctdd_run_test(parse_headers_test_headers_example_test);
+  ctdd_run_test(parse_headers_multibyte_example_test);
+  ctdd_run_test(parse_headers_multiline_example_test);
 }
 
 void setup() {
@@ -116,7 +151,12 @@ void teardown() {
   return;
 }
 
-int main() {
+int main(int argc, char** argv) {
+  int quiet = 0;
+  if(argc > 1 && (!strcmp(argv[1], "--quiet") || !strcmp(argv[1], "-q") )) {
+    quiet = 1;
+  }
+  ctdd_set_quiet(quiet);
   ctdd_configure(setup, teardown);
   ctdd_run_suite(suite_parse_request_first_line);
   ctdd_run_suite(suite_parse_headers);

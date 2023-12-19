@@ -1,10 +1,25 @@
 ## MinHTTP
 
-Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses
+Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses.
 
-features:
 * no memory allocations
 * no dependencies
+
+### How to Use
+
+There is two options:
+* Build library and include it in your project
+* Just copy `minhttp.c` and `minhttp.h` to the proper locations in your project.
+
+### How to Build
+
+1. `mkdir build/`
+2. `cd build/`
+3. `cmake .. && cmake --build .`
+
+### How to Test
+
+In `build/`: `./test` or `./test --quiet` (for no output on success)
 
 ### Roadmap
 
@@ -18,8 +33,6 @@ features:
     - [ ] add tests from request parser from picohttpparser
     - [ ] response first line parser
     - [ ] response parser
-    - [ ] parse only requested headers
-        - [ ] get max key len automatically
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
@@ -32,4 +45,5 @@ features:
         - [ ] picohttpparser
         - [ ] llhttp
     - [ ] add likely and unlikely in all appropriate jumps
-
+    - [ ] parse only requested headers (`mh_parse_headers_set`)
+        - [ ] get max key len automatically
