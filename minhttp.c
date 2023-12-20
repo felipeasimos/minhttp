@@ -179,7 +179,7 @@ enum __MH_HEADER_PARSER_TOKEN {
   ERROR = 0
 };
 
-inline __attribute__((always_inline)) char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
+static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
   CHECK_EOF();
   switch(*data) {
     default: {

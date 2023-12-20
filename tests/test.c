@@ -135,7 +135,6 @@ ctdd_test(parse_headers_multiline_success_example_test) {
   ctdd_assert(strncmp(headers[1].header_value_begin, "b", headers[1].header_value_len) == 0, "header[1] value is wrong");
 }
 
-// char* multiline_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
 // char* trailing_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
 
 ctdd_test_suite(suite_parse_headers) {
