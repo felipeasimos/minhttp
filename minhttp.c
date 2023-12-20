@@ -1,6 +1,5 @@
 #include "minhttp.h"
 
-
 #define NULL 0
 #define uint8_t unsigned char
 
@@ -164,12 +163,13 @@ enum __MH_HEADER_PARSER_STATE {
   LINE_START = ' ',
   FIRST_STRING = 's',
   AFTER_KEY = 'K',
-  DURING_VALUE = 'V',
+  DURING_VALUE = 'v',
+  AFTER_VALUE = 'V',
   DONE = 'D'
 };
 
 enum __MH_HEADER_PARSER_TOKEN {
-  SPACE = ' ',
+  WHITESPACE = ' ',
   COLON = ':',
   NEWLINE = '\n',
   OTHER = 'O',
@@ -183,19 +183,25 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
       *token = OTHER;
       return data + 1;
     }
+    // whitespace
+    case '\t': {
+      *token = WHITESPACE;
+      return data + 1;
+    }
     // newline
     case '\r': {
       if(data + 1 == data_end) return (void*)ERROR;
       if(*(data + 1) != '\n') return (void*)ERROR;
       data++;
     }
-    case SPACE:
+    case WHITESPACE:
     case NEWLINE:
     case COLON: {}
   }
   *token = *data;
   return data + 1;
 }
+
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
   enum __MH_HEADER_PARSER_STATE state = LINE_START;
   enum __MH_HEADER_PARSER_TOKEN token;
@@ -233,7 +239,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned
       }
       case AFTER_KEY: {
         switch(token) {
-          case SPACE: break;
+          case WHITESPACE: break;
           case NEWLINE: {
             state = LINE_START;
             headers[header_counter].header_value_begin = NULL;
@@ -258,7 +264,24 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned
             header_counter++;
             break;
           }
+          case WHITESPACE: {
+            state = AFTER_VALUE;
+            headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+            header_counter++;
+            break;
+          }
           case OTHER: break;
+          default: return (void*)ERROR;
+        }
+        break;
+      }
+      case AFTER_VALUE: {
+        switch(token) {
+          case WHITESPACE: break;
+          case NEWLINE: {
+            state = LINE_START;
+            break;
+          }
           default: return (void*)ERROR;
         }
         break;
