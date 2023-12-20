@@ -37,7 +37,7 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [x] header parser
     - [x] add CMakeLists.txt
     - [x] add tests for request first line from picohttpparser
-    - [ ] add tests for header parser  from picohttpparser
+    - [x] add tests for header parser  from picohttpparser
     - [ ] request parser
     - [ ] add tests from request parser from picohttpparser
     - [ ] response first line parser
@@ -61,10 +61,9 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 
 ![Header Parser State Machine](./header-parser-state-machine.svg)
 
-|        x           |      Before First String      | Before Key |       First String        |     After Key     |       During Value       |  DONE   |
-|--------------------|-------------------------------|------------|---------------------------|-------------------|--------------------------|---------|
-|Before First String |                               |   space    |    other(start of key)    |                   |                          | newline |
-|Before Key          |                               |   space    | other(start of key/value) |                   |                          |         |
-|First String        |                               |            |           other           | colon(end of key) |                          |         |
-|After Key           |     newline(empty value)      |            |                           |       space       |    other(start of value) |         |
-|During Value        |            newline            |            |                           |                   |          other           |         |
+|        x           |      Line Start      |       First String        |     After Key     |       During Value       |  DONE   |
+|--------------------|----------------------|---------------------------|-------------------|--------------------------|---------|
+|Line Start          |                      |    other(start of key)    |                   |                          | newline |
+|First String        |                      |           other           | colon(end of key) |                          |         |
+|After Key           | newline(empty value) |                           |       space       |    other(start of value) |         |
+|During Value        |        newline       |                           |                   |          other           |         |
