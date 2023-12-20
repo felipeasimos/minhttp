@@ -2,7 +2,7 @@ digraph HeaderParser {
   node [group=main, color="#4DA6FF", fontcolor="#FFFDB8"];
   edge [style=invis, weight=100, overlap=0, constraint=true, fontcolor="#FFFDB8", color="#FFFDB8"];
   graph [layout=dot, fontcolor="#FFFDB8", bgcolor="#0d1117"];
-  "Line Start" -> "First String":e -> "After Key":e -> "During Value":e [style=invisible, arrowhead=none];
+  "Line Start" -> "First String":e -> "After Key":e -> "During Value":e -> "After Value":e [style=invisible, arrowhead=none];
   edge [style=solid, weight=1, overlap=scale, constraint=true];
 
   "Line Start" -> "DONE" [label="newline"];
@@ -10,8 +10,11 @@ digraph HeaderParser {
   "First String" -> "First String" [label="other"];
   "First String" -> "After Key" [label="colon (end of key)"];
   "After Key" -> "Line Start" [label="newline (empty value)"];
-  "After Key" -> "After Key" [label="space"];
+  "After Key" -> "After Key" [label="whitespace"];
   "After Key" -> "During Value" [label="other (start of value)"];
   "During Value" -> "Line Start" [label="newline (end of value)"];
   "During Value" -> "During Value" [label="other"];
+  "During Value" -> "After Value" [label="whitespace (end of value)"];
+  "After Value" -> "After Value" [label="whitespace"];
+  "After Value" -> "Line Start" [label="newline"];
 }

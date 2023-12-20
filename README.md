@@ -56,9 +56,10 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 
 ![Header Parser State Machine](./header-parser-state-machine.svg)
 
-|        x           |      Line Start      |       First String        |     After Key     |       During Value       |  DONE   |
-|--------------------|----------------------|---------------------------|-------------------|--------------------------|---------|
-|Line Start          |                      |    other(start of key)    |                   |                          | newline |
-|First String        |                      |           other           | colon(end of key) |                          |         |
-|After Key           | newline(empty value) |                           |       space       |    other(start of value) |         |
-|During Value        |        newline       |                           |                   |          other           |         |
+|        x           |      Line Start      |       First String        |     After Key     |       During Value       | After Value |  DONE   |
+|--------------------|----------------------|---------------------------|-------------------|--------------------------|-------------|---------|
+|Line Start          |                      |    other(start of key)    |                   |                          |             | newline |
+|First String        |                      |           other           | colon(end of key) |                          |             |         |
+|After Key           | newline(empty value) |                           |    whitespace     |    other(start of value) |             |         |
+|During Value        |        newline       |                           |                   |          other           | whitespace  |         |
+|After Value         |        newline       |                           |                   |                          | whitespace  |         |
