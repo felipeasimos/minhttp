@@ -4,8 +4,6 @@
 #define NULL 0
 #define uint8_t unsigned char
 
-#include <stdio.h>
-
 #define MIN(a, b) (a < b ? a : b)
 #if __GNUC__ >= 3
 #define likely(x) __builtin_expect(!!(x), 1)
