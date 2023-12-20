@@ -18,6 +18,7 @@ char* multibyte_example = "GET /hoge HTTP/1.1\r\nHost: example.com\r\nUser-Agent
 char* multiline_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
 char* multiline_success_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n";
 char* trailing_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
+char* empty_name_example = "GET / HTTP/1.0\r\n:a\r\n\r\n";
 char* nul_in_method_example = "G\0T / HTTP/1.0\r\n\r\n";
 char* tab_in_method_example = "G\tT / HTTP/1.0\r\n\r\n";
 char* invalid_method_example = ":GET / HTTP/1.0\r\n\r\n";
@@ -141,7 +142,11 @@ ctdd_test(parse_headers_trailing_example_test) {
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
-// char* trailing_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
+ctdd_test(parse_headers_empty_name_example_test) {
+  char* data = mh_parse_headers(empty_name_example + 16, empty_name_example + strlen(empty_name_example), headers, &num_headers);
+  ctdd_assert(!data, "data is wrong");
+  ctdd_assert(num_headers == 0, "num_headers is wrong");
+}
 
 ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_simple_test);
@@ -151,6 +156,7 @@ ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_multiline_example_test);
   ctdd_run_test(parse_headers_multiline_success_example_test);
   ctdd_run_test(parse_headers_trailing_example_test);
+  ctdd_run_test(parse_headers_empty_name_example_test);
 }
 
 void setup() {
