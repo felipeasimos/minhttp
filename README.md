@@ -26,22 +26,16 @@ There is two options:
 
 In `build/`: `./test` or `./test --quiet` (for no output on success).
 
-The tests are based on the ones from [picohttpparser](https://github.com/h2o/picohttpparser/blob/master/test.c). Be aware that changes have been made due to difference between what is accepted:
-* `picohttpparser` allows "keyless" values. This project doesn't 
-    * compare their "parse multiline" test and this project's "parse_headers_multiline_success_example_test" and "parse_headers_multiline_example_test"
+The tests are based on the ones from [picohttpparser](https://github.com/h2o/picohttpparser/blob/master/test.c). Be aware that changes have been made due to difference between them:
+* picohttpparser allows "keyless" values. This project doesn't 
+    * compare their `"parse multiline"` test and this project's `"parse_headers_multiline_success_example_test"` and `"parse_headers_multiline_example_test"` for a better visualization.
 
 ### Roadmap
 
 - [ ] parsers
-    - [x] request first line parser
-    - [x] header parser
-    - [x] add CMakeLists.txt
-    - [x] add tests for request first line from picohttpparser
-    - [x] add tests for header parser  from picohttpparser
-    - [ ] request parser
-    - [ ] add tests from request parser from picohttpparser
-    - [ ] response first line parser
-    - [ ] response parser
+    - [x] pass all tests for request first line from picohttpparser
+    - [x] pass all tests for header parser from picohttpparser
+    - [ ] pass all tests for response first line parser from picohttpparser
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
@@ -54,6 +48,7 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
         - [ ] picohttpparser
         - [ ] llhttp
     - [ ] add likely and unlikely in all appropriate jumps
+    - [ ] use token map for state machine instead of switch statements
     - [ ] parse only requested headers (`mh_parse_headers_set`)
         - [ ] get max key len automatically
 
