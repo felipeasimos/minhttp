@@ -19,10 +19,12 @@ char* multiline_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
 char* multiline_success_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n";
 char* trailing_colon_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
 char* trailing_value_example = "GET / HTTP/1.0\r\nfoo: a \t \r\n\r\n";
+
 char* empty_name_example = "GET / HTTP/1.0\r\n:a\r\n\r\n";
 char* nul_in_method_example = "G\0T / HTTP/1.0\r\n\r\n";
 char* tab_in_method_example = "G\tT / HTTP/1.0\r\n\r\n";
 char* invalid_method_example = ":GET / HTTP/1.0\r\n\r\n";
+char* multiple_whitespace_example = "GET   /   HTTP/1.0\r\n\r\n";
 
 ctdd_test(parse_request_first_line_simple_test) {
   char* data = mh_parse_request_first_line(simple_example, simple_example + strlen(simple_example), &method, path, &path_len, &version);
@@ -55,9 +57,15 @@ ctdd_test(parse_request_first_line_tab_in_method_test) {
 ctdd_test(parse_request_first_line_invalid_method_test) {
   char* data = mh_parse_request_first_line(invalid_method_example, invalid_method_example + strlen(invalid_method_example), &method, path, &path_len, &version);
   ctdd_assert(data == NULL, "return addr is wrong");
-
 }
 
+ctdd_test(parse_request_first_line_multiple_whitespace_test) {
+  char* data = mh_parse_request_first_line(multiple_whitespace_example, multiple_whitespace_example + strlen(multiple_whitespace_example), &method, path, &path_len, &version);
+  ctdd_assert(data == multiple_whitespace_example + 20, "data is wrong");
+  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strcmp(path, "/") == 0, "path is wrong");
+  ctdd_assert(version == HTTP_1, "version is wrong");
+}
 
 ctdd_test_suite(suite_parse_request_first_line) {
   ctdd_run_test(parse_request_first_line_simple_test);
@@ -65,6 +73,7 @@ ctdd_test_suite(suite_parse_request_first_line) {
   ctdd_run_test(parse_request_first_line_nul_in_method_test);
   ctdd_run_test(parse_request_first_line_tab_in_method_test);
   ctdd_run_test(parse_request_first_line_invalid_method_test);
+  ctdd_run_test(parse_request_first_line_multiple_whitespace_test);
 }
 
 ctdd_test(parse_headers_simple_test) {
