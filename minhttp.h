@@ -1,3 +1,5 @@
+#pragma once
+
 typedef enum MH_HTTP_METHOD {
   GET = 1,
   POST = 2,

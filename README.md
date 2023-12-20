@@ -23,7 +23,11 @@ There is two options:
 
 ### How to Test
 
-In `build/`: `./test` or `./test --quiet` (for no output on success)
+In `build/`: `./test` or `./test --quiet` (for no output on success).
+
+The tests are based on the ones from [picohttpparser](https://github.com/h2o/picohttpparser/blob/master/test.c). Be aware that changes have been made due to difference between what is accepted:
+* `picohttpparser` allows "keyless" values. This project doesn't 
+    * compare their "parse multiline" test and this project's "parse_headers_multiline_success_example_test" and "parse_headers_multiline_example_test"
 
 ### Roadmap
 
@@ -51,3 +55,15 @@ In `build/`: `./test` or `./test --quiet` (for no output on success)
     - [ ] add likely and unlikely in all appropriate jumps
     - [ ] parse only requested headers (`mh_parse_headers_set`)
         - [ ] get max key len automatically
+
+### Header Parser State Machine
+
+![Header Parser State Machine](./header-parser-state-machine.svg)
+
+|        x           |      Before First String      | Before Key |       First String        |     After Key     |       During Value       |  DONE   |
+|--------------------|-------------------------------|------------|---------------------------|-------------------|--------------------------|---------|
+|Before First String |                               |   space    |    other(start of key)    |                   |                          | newline |
+|Before Key          |                               |   space    | other(start of key/value) |                   |                          |         |
+|First String        |                               |            |           other           | colon(end of key) |                          |         |
+|After Key           |     newline(empty value)      |            |                           |       space       |    other(start of value) |         |
+|During Value        |            newline            |            |                           |                   |          other           |         |
