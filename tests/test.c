@@ -196,6 +196,31 @@ ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_empty_name_example_test);
 }
 
+ctdd_test(parse_response_first_line_1_1_test) {
+  char* data = mh_parse_response_first_line(simple_example, simple_example + strlen(simple_example), &method, path, &path_len, &version);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == &simple_example[16], "return addr is wrong");
+  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strcmp(path, "/") == 0, "path is wrong");
+  ctdd_assert(version == HTTP_1, "version is wrong");
+}
+
+// char* response_1_1_example = "HTTP/1.1 200 OK\r\nHost: example.com\r\nCookie: \r\n\r\n";
+// char* response_1_0_example = "HTTP/1.0 200 OK\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
+// char* response_error_example = "HTTP/1.0 500 Internal Server Error\r\n\r\n";
+// char* response_incomplete_version_example = "HTTP/1. 200 OK\r\n\r\n";
+// char* response_wrong_version_example = "HTTP/1.2z 200 OK\r\n\r\n";
+// char* response_no_status_example = "HTTP/1.1  OK\r\n\r\n";
+// char* response_no_phrase_example = "HTTP/1.1 200\r\n\r\n";
+// char* response_garbage_1_example = "HTTP/1.1 200X\r\n\r\n";
+// char* response_garbage_2_example = "HTTP/1.1 200X \r\n\r\n";
+// char* response_garbage_3_example = "HTTP/1.1 200X OK\r\n\r\n";
+// char* response_multiple_whitespace_example = "HTTP/1.1   200   OK\r\n\r\n";
+
+ctdd_test_suite(suite_parse_response_first_line) {
+  ctdd_run_test(parse_response_first_line_1_1_test);
+}
+
 void setup() {
   version = 0;
   method = 0;
@@ -218,4 +243,5 @@ int main(int argc, char** argv) {
   ctdd_configure(setup, teardown);
   ctdd_run_suite(suite_parse_request_first_line);
   ctdd_run_suite(suite_parse_headers);
+  ctdd_run_suite(suite_parse_response_first_line);
 }
