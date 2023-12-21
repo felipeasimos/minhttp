@@ -11,6 +11,7 @@ unsigned int num_headers = 5;
 mh_header headers[5] = {0};
 
 // examples taken from picohttpparser
+
 char* simple_example = "GET / HTTP/1.0\r\n\r\n";
 char* partial_example = "GET / HTTP/1.0\r\n\r";
 char* test_headers_example = "GET /hoge HTTP/1.1\r\nHost: example.com\r\nCookie: \r\n\r\n";
@@ -19,12 +20,24 @@ char* multiline_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
 char* multiline_success_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n";
 char* trailing_colon_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
 char* trailing_value_example = "GET / HTTP/1.0\r\nfoo: a \t \r\n\r\n";
-
 char* empty_name_example = "GET / HTTP/1.0\r\n:a\r\n\r\n";
+
 char* nul_in_method_example = "G\0T / HTTP/1.0\r\n\r\n";
 char* tab_in_method_example = "G\tT / HTTP/1.0\r\n\r\n";
 char* invalid_method_example = ":GET / HTTP/1.0\r\n\r\n";
 char* multiple_whitespace_example = "GET   /   HTTP/1.0\r\n\r\n";
+
+char* response_1_1_example = "HTTP/1.1 200 OK\r\nHost: example.com\r\nCookie: \r\n\r\n";
+char* response_1_0_example = "HTTP/1.0 200 OK\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
+char* response_error_example = "HTTP/1.0 500 Internal Server Error\r\n\r\n";
+char* response_incomplete_version_example = "HTTP/1. 200 OK\r\n\r\n";
+char* response_wrong_version_example = "HTTP/1.2z 200 OK\r\n\r\n";
+char* response_no_status_example = "HTTP/1.1  OK\r\n\r\n";
+char* response_no_phrase_example = "HTTP/1.1 200\r\n\r\n";
+char* response_garbage_1_example = "HTTP/1.1 200X\r\n\r\n";
+char* response_garbage_2_example = "HTTP/1.1 200X \r\n\r\n";
+char* response_garbage_3_example = "HTTP/1.1 200X OK\r\n\r\n";
+char* response_multiple_whitespace_example = "HTTP/1.1   200   OK\r\n\r\n";
 
 ctdd_test(parse_request_first_line_simple_test) {
   char* data = mh_parse_request_first_line(simple_example, simple_example + strlen(simple_example), &method, path, &path_len, &version);
