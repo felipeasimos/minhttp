@@ -58,14 +58,12 @@ char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
           return data + 3;
         }
         case 'O': {
-          if(data_len == 3) return NULL;
-          if(*(data+2) != 'S' || *(data+3) != 'T') return NULL;
+          if(data_len == 3 || *(data+2) != 'S' || *(data+3) != 'T') return NULL;
           *method = POST;
           return data + 4;
         }
         case 'A': {
-          if(data_len == 4) return NULL;
-          if(*(data+2) != 'T' || *(data+3) != 'C' || *(data+4) != 'H') return NULL;
+          if(data_len == 4 || *(data+2) != 'T' || *(data+3) != 'C' || *(data+4) != 'H') return NULL;
           * method = PATCH;
           return data + 5;
         }
@@ -73,36 +71,31 @@ char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
     }
     // OPTIONS
     case 'O': {
-      if(data_len < 7) return NULL;
-      if(*(data+1) != 'P' || *(data+2) != 'T' || *(data+3) != 'I' || *(data+4) != 'O' || *(data+5) != 'N' || *(data+6) != 'S') return NULL;
+      if(data_len < 7 || *(data+1) != 'P' || *(data+2) != 'T' || *(data+3) != 'I' || *(data+4) != 'O' || *(data+5) != 'N' || *(data+6) != 'S') return NULL;
       *method = OPTIONS;
       return data + 7;
     }
     // HEAD
     case 'H': {
-      if(data_len < 4) return NULL;
-      if(*(data+1) != 'E' || *(data+2) != 'A' || *(data+3) != 'D') return NULL;
+      if(data_len < 4 || *(data+1) != 'E' || *(data+2) != 'A' || *(data+3) != 'D') return NULL;
       *method = HEAD;
       return data + 4;
     }
     // DELETE
     case 'D': {
-      if(data_len < 6) return NULL;
-      if(*(data+1) != 'E' || *(data+2) != 'L' || *(data+3) != 'E' || *(data+4) != 'T' || *(data+5) != 'E') return NULL;
+      if(data_len < 6 || *(data+1) != 'E' || *(data+2) != 'L' || *(data+3) != 'E' || *(data+4) != 'T' || *(data+5) != 'E') return NULL;
       *method = DELETE;
       return data + 6;
     }
     // TRACE
     case 'T': {
-      if(data_len < 5) return NULL;
-      if(*(data+1) != 'R' || *(data+2) != 'A' || *(data+3) != 'C' || *(data+4) != 'E') return NULL;
+      if(data_len < 5 || *(data+1) != 'R' || *(data+2) != 'A' || *(data+3) != 'C' || *(data+4) != 'E') return NULL;
       *method = TRACE;
       return data + 6;
     }
     // CONNECT
     case 'C': {
-      if(data_len < 7) return NULL;
-      if(*(data+1) != 'O'|| *(data+2) != 'N'|| *(data+3) != 'N'|| *(data+4) != 'E'|| *(data+5) != 'C'|| *(data+6) != 'T') return NULL;
+      if(data_len < 7 || *(data+1) != 'O'|| *(data+2) != 'N'|| *(data+3) != 'N'|| *(data+4) != 'E'|| *(data+5) != 'C'|| *(data+6) != 'T') return NULL;
       *method = CONNECT;
       return data + 7;
     }
@@ -190,8 +183,7 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
     }
     // newline
     case '\r': {
-      if(data + 1 == data_end) return (void*)ERROR;
-      if(*(data + 1) != '\n') return (void*)ERROR;
+      if(data + 1 == data_end || *(data + 1) != '\n') return (void*)ERROR;
       data++;
     }
     case WHITESPACE:
