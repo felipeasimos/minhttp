@@ -37,6 +37,19 @@ return:
 */
 char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version);
 
+/* 
+char* data - pointer to first char of data to parse
+char* data_end - pointer to final char of data + 1 to parse
+mh_version* version - where the version will be written to.
+unsigned short* status - where the status code will be written to.
+char* phrase - where the reason phrase will be written to.
+unsigned int* phrase_len - maximum length of the phrase pointer allocated memory. After function execution will be the value of bytes written to it.
+return:
+  - NULL -> error
+  - address -> address after newline
+*/
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, unsigned short* status, char* phrase, unsigned int* phrase_len);
+
 /*
 char* data - pointer to first char of data to parse
 char* data_end - pointer to final char of data + 1 to parse

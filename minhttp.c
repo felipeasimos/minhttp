@@ -20,7 +20,6 @@
 
 #define UNTIL_NOT(x) for(; data != data_end && *data == x; data++) CHECK_EOF();
 
-
 #define EXPECT_NEWLINE() do {\
   if(data_end == data) return NULL;\
   switch(*data) {\
@@ -58,14 +57,12 @@ char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
           return data + 3;
         }
         case 'O': {
-          if(data_len == 3) return NULL;
-          if(*(data+2) != 'S' || *(data+3) != 'T') return NULL;
+          if(data_len == 3 || *(data+2) != 'S' || *(data+3) != 'T') return NULL;
           *method = POST;
           return data + 4;
         }
         case 'A': {
-          if(data_len == 4) return NULL;
-          if(*(data+2) != 'T' || *(data+3) != 'C' || *(data+4) != 'H') return NULL;
+          if(data_len == 4 || *(data+2) != 'T' || *(data+3) != 'C' || *(data+4) != 'H') return NULL;
           * method = PATCH;
           return data + 5;
         }
@@ -73,36 +70,31 @@ char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
     }
     // OPTIONS
     case 'O': {
-      if(data_len < 7) return NULL;
-      if(*(data+1) != 'P' || *(data+2) != 'T' || *(data+3) != 'I' || *(data+4) != 'O' || *(data+5) != 'N' || *(data+6) != 'S') return NULL;
+      if(data_len < 7 || *(data+1) != 'P' || *(data+2) != 'T' || *(data+3) != 'I' || *(data+4) != 'O' || *(data+5) != 'N' || *(data+6) != 'S') return NULL;
       *method = OPTIONS;
       return data + 7;
     }
     // HEAD
     case 'H': {
-      if(data_len < 4) return NULL;
-      if(*(data+1) != 'E' || *(data+2) != 'A' || *(data+3) != 'D') return NULL;
+      if(data_len < 4 || *(data+1) != 'E' || *(data+2) != 'A' || *(data+3) != 'D') return NULL;
       *method = HEAD;
       return data + 4;
     }
     // DELETE
     case 'D': {
-      if(data_len < 6) return NULL;
-      if(*(data+1) != 'E' || *(data+2) != 'L' || *(data+3) != 'E' || *(data+4) != 'T' || *(data+5) != 'E') return NULL;
+      if(data_len < 6 || *(data+1) != 'E' || *(data+2) != 'L' || *(data+3) != 'E' || *(data+4) != 'T' || *(data+5) != 'E') return NULL;
       *method = DELETE;
       return data + 6;
     }
     // TRACE
     case 'T': {
-      if(data_len < 5) return NULL;
-      if(*(data+1) != 'R' || *(data+2) != 'A' || *(data+3) != 'C' || *(data+4) != 'E') return NULL;
+      if(data_len < 5 || *(data+1) != 'R' || *(data+2) != 'A' || *(data+3) != 'C' || *(data+4) != 'E') return NULL;
       *method = TRACE;
       return data + 6;
     }
     // CONNECT
     case 'C': {
-      if(data_len < 7) return NULL;
-      if(*(data+1) != 'O'|| *(data+2) != 'N'|| *(data+3) != 'N'|| *(data+4) != 'E'|| *(data+5) != 'C'|| *(data+6) != 'T') return NULL;
+      if(data_len < 7 || *(data+1) != 'O'|| *(data+2) != 'N'|| *(data+3) != 'N'|| *(data+4) != 'E'|| *(data+5) != 'C'|| *(data+6) != 'T') return NULL;
       *method = CONNECT;
       return data + 7;
     }
@@ -119,6 +111,26 @@ char* _mh_parse_path(char* data, char* data_end, char* path, unsigned int* path_
   *path_len = &data[i] - data;
   for(; data[i] != ' '; i++);
   return &data[i];
+}
+
+
+char* _mh_parse_phrase(char* data, char* data_end, char* phrase, unsigned int* phrase_len) {
+  unsigned int limit = MIN(data_end - data, *phrase_len);
+  unsigned int i = 0;
+  for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++) {
+    phrase[i] = data[i];
+  }
+  *phrase_len = &data[i] - data;
+  return &data[i];
+}
+
+char* _mh_parse_status_code(char* data, char* data_end, unsigned short* status) {
+  // buffer size left
+  if(data_end - data < 3) return NULL;
+  // are digits valid?
+  if((data[0] < '1' || '5' < data[0]) || (data[1] < '0' || '9' < data[1]) || (data[2] < '0' || '9' < data[2])) return NULL;
+  *status = 100 * (data[0] - '0') + 10 * (data[1] - '0') + data[2] - '0';
+  return data + 3;
 }
 
 char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
@@ -159,6 +171,21 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   EXPECT_NEWLINE();
 }
 
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, unsigned short* status, char* phrase, unsigned int* phrase_len) {
+  if(data_end < data) return NULL;
+  data = _mh_parse_version(data, data_end, version);
+  if(!data) return NULL;
+  UNTIL_NOT(' ');
+  data = _mh_parse_status_code(data, data_end, status);
+  if(!data) return NULL;
+  if(*data != '\r' && *data != '\n' && *data != ' ') return NULL;
+  UNTIL_NOT(' ');
+  data = _mh_parse_phrase(data, data_end, phrase, phrase_len);
+  if(!data) return NULL;
+  EXPECT_NEWLINE();
+  return data;
+}
+
 enum __MH_HEADER_PARSER_STATE {
   LINE_START = ' ',
   FIRST_STRING = 's',
@@ -190,8 +217,7 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
     }
     // newline
     case '\r': {
-      if(data + 1 == data_end) return (void*)ERROR;
-      if(*(data + 1) != '\n') return (void*)ERROR;
+      if(data + 1 == data_end || *(data + 1) != '\n') return (void*)ERROR;
       data++;
     }
     case WHITESPACE:
@@ -298,9 +324,4 @@ char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned 
   data = _mh_parse_headers(data, data_end, headers, num_headers);
   if(!data) *num_headers = 0;
   return data;
-}
-
-char* mh_parse_request(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version, mh_header* headers, unsigned int* num_headers) {
-  data = mh_parse_request_first_line(data, data_end, method, path, path_len, version);
-  return mh_parse_headers(data, data_end, headers, num_headers);
 }
