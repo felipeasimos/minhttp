@@ -35,7 +35,7 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 - [ ] parsers
     - [x] pass all tests for request first line from picohttpparser
     - [x] pass all tests for header parser from picohttpparser
-    - [ ] pass all tests for response first line parser from picohttpparser
+    - [x] pass all tests for response first line parser from picohttpparser
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
