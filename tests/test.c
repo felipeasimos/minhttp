@@ -209,20 +209,90 @@ ctdd_test(parse_response_first_line_1_1_test) {
   ctdd_assert(strcmp(phrase, "OK") == 0, "phrase is wrong");
 }
 
-// char* response_1_1_example = "HTTP/1.1 200 OK\r\nHost: example.com\r\nCookie: \r\n\r\n";
-// char* response_1_0_example = "HTTP/1.0 200 OK\r\nfoo: \r\nfoo: b\r\n  \tc\r\n\r\n";
-// char* response_error_example = "HTTP/1.0 500 Internal Server Error\r\n\r\n";
-// char* response_incomplete_version_example = "HTTP/1. 200 OK\r\n\r\n";
-// char* response_wrong_version_example = "HTTP/1.2z 200 OK\r\n\r\n";
-// char* response_no_status_example = "HTTP/1.1  OK\r\n\r\n";
-// char* response_no_phrase_example = "HTTP/1.1 200\r\n\r\n";
-// char* response_garbage_1_example = "HTTP/1.1 200X\r\n\r\n";
-// char* response_garbage_2_example = "HTTP/1.1 200X \r\n\r\n";
-// char* response_garbage_3_example = "HTTP/1.1 200X OK\r\n\r\n";
+ctdd_test(parse_response_first_line_1_0_test) {
+  char* data = mh_parse_response_first_line(response_1_0_example, response_1_0_example + strlen(response_1_0_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == &response_1_0_example[17], "return addr is wrong");
+  ctdd_assert(version == HTTP_1, "version is wrong");
+  ctdd_assert(status == 200, "status code is wrong");
+  ctdd_assert(phrase_len == 2, "phrase_len is wrong");
+  ctdd_assert(strcmp(phrase, "OK") == 0, "phrase is wrong");
+}
+
+ctdd_test(parse_response_first_line_error_test) {
+  char* data = mh_parse_response_first_line(response_error_example, response_error_example + strlen(response_error_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == &response_error_example[36], "return addr is wrong");
+  ctdd_assert(version == HTTP_1, "version is wrong");
+  ctdd_assert(status == 500, "status code is wrong");
+  ctdd_assert(phrase_len == 21, "phrase_len is wrong");
+  ctdd_assert(strcmp(phrase, "Internal Server Error") == 0, "phrase is wrong");
+}
+
+ctdd_test(parse_response_first_line_incomplete_version_test) {
+  char* data = mh_parse_response_first_line(response_incomplete_version_example, response_incomplete_version_example + strlen(response_incomplete_version_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(data == NULL, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_wrong_version_test) {
+  char* data = mh_parse_response_first_line(response_wrong_version_example, response_wrong_version_example + strlen(response_wrong_version_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(!data, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_no_status_test) {
+  char* data = mh_parse_response_first_line(response_no_status_example, response_no_status_example + strlen(response_no_status_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(!data, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_no_phrase_test) {
+  char* data = mh_parse_response_first_line(response_no_phrase_example, response_no_phrase_example + strlen(response_no_phrase_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == &response_no_phrase_example[14], "return addr is wrong");
+  ctdd_assert(version == HTTP_1_1, "version is wrong");
+  ctdd_assert(status == 200, "status code is wrong");
+  ctdd_assert(phrase_len == 0, "phrase_len is wrong");
+  ctdd_assert(strcmp(phrase, "") == 0, "phrase is wrong");
+}
+
+ctdd_test(parse_response_first_line_garbage_1_test) {
+  char* data = mh_parse_response_first_line(response_garbage_1_example, response_garbage_1_example + strlen(response_garbage_1_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(!data, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_garbage_2_test) {
+  char* data = mh_parse_response_first_line(response_garbage_2_example, response_garbage_2_example + strlen(response_garbage_2_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(!data, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_garbage_3_test) {
+  char* data = mh_parse_response_first_line(response_garbage_3_example, response_garbage_3_example + strlen(response_garbage_3_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(!data, "data is NULL");
+}
+
+ctdd_test(parse_response_first_line_multiple_whitespace_test) {
+  char* data = mh_parse_response_first_line(response_multiple_whitespace_example, response_multiple_whitespace_example + strlen(response_multiple_whitespace_example), &version, &status, phrase, &phrase_len);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == &response_multiple_whitespace_example[21], "return addr is wrong");
+  ctdd_assert(version == HTTP_1_1, "version is wrong");
+  ctdd_assert(status == 200, "status code is wrong");
+  ctdd_assert(phrase_len == 2, "phrase_len is wrong");
+  ctdd_assert(strcmp(phrase, "OK") == 0, "phrase is wrong");
+}
+
 // char* response_multiple_whitespace_example = "HTTP/1.1   200   OK\r\n\r\n";
 
 ctdd_test_suite(suite_parse_response_first_line) {
   ctdd_run_test(parse_response_first_line_1_1_test);
+  ctdd_run_test(parse_response_first_line_1_0_test);
+  ctdd_run_test(parse_response_first_line_error_test);
+  ctdd_run_test(parse_response_first_line_incomplete_version_test);
+  ctdd_run_test(parse_response_first_line_wrong_version_test);
+  ctdd_run_test(parse_response_first_line_no_status_test);
+  ctdd_run_test(parse_response_first_line_no_phrase_test);
+  ctdd_run_test(parse_response_first_line_garbage_1_test);
+  ctdd_run_test(parse_response_first_line_garbage_2_test);
+  ctdd_run_test(parse_response_first_line_garbage_3_test);
+  ctdd_run_test(parse_response_first_line_multiple_whitespace_test);
 }
 
 void setup() {
@@ -231,6 +301,7 @@ void setup() {
   status = 0;
   memset(path, 0x00, MAX_BUFFER_LEN);
   path_len = MAX_BUFFER_LEN - 1;
+  memset(phrase, 0x00, MAX_BUFFER_LEN);
   phrase_len = MAX_BUFFER_LEN - 1;
   num_headers = 5;
   memset(headers, 0x00, num_headers * sizeof(mh_header));

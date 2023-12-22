@@ -178,6 +178,7 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
   UNTIL_NOT(' ');
   data = _mh_parse_status_code(data, data_end, status);
   if(!data) return NULL;
+  if(*data != '\r' && *data != '\n' && *data != ' ') return NULL;
   UNTIL_NOT(' ');
   data = _mh_parse_phrase(data, data_end, phrase, phrase_len);
   if(!data) return NULL;
