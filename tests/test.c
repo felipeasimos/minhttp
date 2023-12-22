@@ -2,13 +2,16 @@
 #include "ctdd.h"
 #include <string.h>
 
-#define MAX_PATH_LEN 1096
+#define MAX_BUFFER_LEN 1096
 mh_version version;
 mh_method method;
 char path[1096] = {0};
 unsigned int path_len = 1096;
+char phrase[1096] = {0};
+unsigned int phrase_len = 1096;
 unsigned int num_headers = 5;
 mh_header headers[5] = {0};
+unsigned short status = 0;
 
 // examples taken from picohttpparser
 
@@ -197,12 +200,13 @@ ctdd_test_suite(suite_parse_headers) {
 }
 
 ctdd_test(parse_response_first_line_1_1_test) {
-  char* data = mh_parse_response_first_line(simple_example, simple_example + strlen(simple_example), &method, path, &path_len, &version);
+  char* data = mh_parse_response_first_line(response_1_1_example, response_1_1_example + strlen(response_1_1_example), &version, &status, phrase, &phrase_len);
   ctdd_assert(data, "data is NULL");
-  ctdd_assert(data == &simple_example[16], "return addr is wrong");
-  ctdd_assert(method == GET, "method is wrong");
-  ctdd_assert(strcmp(path, "/") == 0, "path is wrong");
-  ctdd_assert(version == HTTP_1, "version is wrong");
+  ctdd_assert(data == &response_1_1_example[17], "return addr is wrong");
+  ctdd_assert(version == HTTP_1_1, "version is wrong");
+  ctdd_assert(status == 200, "status code is wrong");
+  ctdd_assert(phrase_len == 2, "phrase_len is wrong");
+  ctdd_assert(strcmp(phrase, "OK") == 0, "phrase is wrong");
 }
 
 // char* response_1_1_example = "HTTP/1.1 200 OK\r\nHost: example.com\r\nCookie: \r\n\r\n";
@@ -224,8 +228,10 @@ ctdd_test_suite(suite_parse_response_first_line) {
 void setup() {
   version = 0;
   method = 0;
-  memset(path, 0x00, MAX_PATH_LEN);
-  path_len = MAX_PATH_LEN - 1;
+  status = 0;
+  memset(path, 0x00, MAX_BUFFER_LEN);
+  path_len = MAX_BUFFER_LEN - 1;
+  phrase_len = MAX_BUFFER_LEN - 1;
   num_headers = 5;
   memset(headers, 0x00, num_headers * sizeof(mh_header));
 }

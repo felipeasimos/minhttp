@@ -20,7 +20,6 @@
 
 #define UNTIL_NOT(x) for(; data != data_end && *data == x; data++) CHECK_EOF();
 
-
 #define EXPECT_NEWLINE() do {\
   if(data_end == data) return NULL;\
   switch(*data) {\
@@ -114,6 +113,26 @@ char* _mh_parse_path(char* data, char* data_end, char* path, unsigned int* path_
   return &data[i];
 }
 
+
+char* _mh_parse_phrase(char* data, char* data_end, char* phrase, unsigned int* phrase_len) {
+  unsigned int limit = MIN(data_end - data, *phrase_len);
+  unsigned int i = 0;
+  for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++) {
+    phrase[i] = data[i];
+  }
+  *phrase_len = &data[i] - data;
+  return &data[i];
+}
+
+char* _mh_parse_status_code(char* data, char* data_end, unsigned short* status) {
+  // buffer size left
+  if(data_end - data < 3) return NULL;
+  // are digits valid?
+  if((data[0] < '1' || '5' < data[0]) || (data[1] < '0' || '9' < data[1]) || (data[2] < '0' || '9' < data[2])) return NULL;
+  *status = 100 * (data[0] - '0') + 10 * (data[1] - '0') + data[2] - '0';
+  return data + 3;
+}
+
 char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
   if(data_end < data + 8) return NULL;
   EXPECT_NO_CHECK('H');
@@ -150,6 +169,20 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   data = _mh_parse_version(data, data_end, version);
   if(!data) return NULL;
   EXPECT_NEWLINE();
+}
+
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, unsigned short* status, char* phrase, unsigned int* phrase_len) {
+  if(data_end < data) return NULL;
+  data = _mh_parse_version(data, data_end, version);
+  if(!data) return NULL;
+  UNTIL_NOT(' ');
+  data = _mh_parse_status_code(data, data_end, status);
+  if(!data) return NULL;
+  UNTIL_NOT(' ');
+  data = _mh_parse_phrase(data, data_end, phrase, phrase_len);
+  if(!data) return NULL;
+  EXPECT_NEWLINE();
+  return data;
 }
 
 enum __MH_HEADER_PARSER_STATE {
@@ -290,9 +323,4 @@ char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned 
   data = _mh_parse_headers(data, data_end, headers, num_headers);
   if(!data) *num_headers = 0;
   return data;
-}
-
-char* mh_parse_request(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version, mh_header* headers, unsigned int* num_headers) {
-  data = mh_parse_request_first_line(data, data_end, method, path, path_len, version);
-  return mh_parse_headers(data, data_end, headers, num_headers);
 }
