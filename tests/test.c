@@ -6,12 +6,12 @@
 mh_version version;
 mh_method method;
 char path[1096] = {0};
-unsigned int path_len = 1096;
+uint32_t path_len = 1096;
 char phrase[1096] = {0};
-unsigned int phrase_len = 1096;
-unsigned int num_headers = 5;
+uint32_t phrase_len = 1096;
+uint32_t num_headers = 5;
 mh_header headers[5] = {0};
-unsigned short status = 0;
+uint16_t status = 0;
 
 // examples taken from picohttpparser
 

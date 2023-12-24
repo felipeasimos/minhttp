@@ -1,7 +1,6 @@
 #include "minhttp.h"
 
 #define NULL 0
-#define uint8_t unsigned char
 
 #define MIN(a, b) (a < b ? a : b)
 #if __GNUC__ >= 3
@@ -37,7 +36,7 @@
   }\
 } while(0);
 
-char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
+char* _mh_parse_method(char* data, uint32_t data_len, mh_method* method) {
   if(data_len < 3) return NULL;
   switch(*data) {
     // GET
@@ -102,9 +101,9 @@ char* _mh_parse_method(char* data, unsigned int data_len, mh_method* method) {
   return NULL;
 }
 
-char* _mh_parse_path(char* data, char* data_end, char* path, unsigned int* path_len) {
-  unsigned int limit = MIN(data_end - data, *path_len);
-  unsigned int i = 0;
+char* _mh_parse_path(char* data, char* data_end, char* path, uint32_t* path_len) {
+  uint32_t limit = MIN(data_end - data, *path_len);
+  uint32_t i = 0;
   for(; i < limit && data[i] != ' '; i++) {
     path[i] = data[i];
   }
@@ -114,9 +113,9 @@ char* _mh_parse_path(char* data, char* data_end, char* path, unsigned int* path_
 }
 
 
-char* _mh_parse_phrase(char* data, char* data_end, char* phrase, unsigned int* phrase_len) {
-  unsigned int limit = MIN(data_end - data, *phrase_len);
-  unsigned int i = 0;
+char* _mh_parse_phrase(char* data, char* data_end, char* phrase, uint32_t* phrase_len) {
+  uint32_t limit = MIN(data_end - data, *phrase_len);
+  uint32_t i = 0;
   for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++) {
     phrase[i] = data[i];
   }
@@ -124,7 +123,7 @@ char* _mh_parse_phrase(char* data, char* data_end, char* phrase, unsigned int* p
   return &data[i];
 }
 
-char* _mh_parse_status_code(char* data, char* data_end, unsigned short* status) {
+char* _mh_parse_status_code(char* data, char* data_end, uint16_t* status) {
   // buffer size left
   if(data_end - data < 3) return NULL;
   // are digits valid?
@@ -158,7 +157,7 @@ char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
   return data + 1;
 }
 
-char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, unsigned int* path_len, mh_version* version) {
+char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, uint32_t* path_len, mh_version* version) {
   if(data_end < data) return NULL;
   data = _mh_parse_method(data, data_end - data, method);
   if(!data) return NULL;
@@ -171,7 +170,7 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   EXPECT_NEWLINE();
 }
 
-char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, unsigned short* status, char* phrase, unsigned int* phrase_len) {
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, uint16_t* status, char* phrase, uint32_t* phrase_len) {
   if(data_end < data) return NULL;
   data = _mh_parse_version(data, data_end, version);
   if(!data) return NULL;
@@ -228,10 +227,10 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
   return data + 1;
 }
 
-char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
+char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   enum __MH_HEADER_PARSER_STATE state = LINE_START;
   enum __MH_HEADER_PARSER_TOKEN token;
-  unsigned int header_counter = 0;
+  uint32_t header_counter = 0;
   while(header_counter < *num_headers && state != DONE) {
     char* next_data = NULL;
     if(!(next_data = _mh_parse_headers_token(data, data_end, &token))) return NULL;
@@ -320,7 +319,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned
   return data;
 }
 
-char* mh_parse_headers(char* data, char* data_end, mh_header* headers, unsigned int* num_headers) {
+char* mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   data = _mh_parse_headers(data, data_end, headers, num_headers);
   if(!data) *num_headers = 0;
   return data;
