@@ -1,5 +1,7 @@
 #include "minhttp.h"
 
+#define NULL 0
+
 #define MIN(a, b) (a < b ? a : b)
 #if __GNUC__ >= 3
 #define likely(x) __builtin_expect(!!(x), 1)
