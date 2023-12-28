@@ -49,6 +49,7 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
         - [ ] llhttp
     - [ ] add likely and unlikely in all appropriate jumps
     - [ ] use token map for state machine instead of switch statements
+    - [ ] add code coverage percentage
     - [ ] parse only requested headers (`mh_parse_headers_set`)
         - [ ] get max key len automatically
 

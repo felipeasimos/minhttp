@@ -142,8 +142,8 @@ static void test_suite()
       "\x1b[34m"#test_suite"\x1b[0m report:\n"\
         "\tstatus: %s\n"\
         "\tnumber of tests: %lu\n"\
-        "\ttotal test time: %lu.%lu secs\n"\
-        "\taverage test time: %lu.%lu secs\n",\
+        "\ttotal test time: %lu.%06lu secs\n"\
+        "\taverage test time: %lu.%06lu secs\n",\
       __ctdd_get_suite_struct(test_suite)->status == __ctdd_fail_code ? "\x1b[1;31m ■ \x1b[0m" : "\x1b[1;32m ■ \x1b[0m",\
       __ctdd_get_suite_struct(test_suite)->num_tests,\
       microsecs/(unsigned long)10e6, microsecs%(unsigned long)10e6,\
@@ -172,7 +172,7 @@ static void test_suite()
     if(write_headers) {\
       fprintf(file, "name,total_time_micro,avg_time_micro,num_tests,status\n");\
     }\
-    fprintf(file, "%s,%lu,%lu,%lu,%d\n", #test_suite, microsecs, avg_microsecs, num_tests, status);\
+    fprintf(file, "%s,%.06lu,%0.6lu,%lu,%d\n", #test_suite, microsecs, avg_microsecs, num_tests, status);\
     fclose(file);\
   )
 // assert condition
