@@ -210,6 +210,18 @@ enum __MH_HEADER_PARSER_TOKEN {
   TOKEN_ERROR = 4,
 };
 
+enum __MH_HEADER_PARSER_ACTION {
+  START_KEY = 1,
+  END_KEY = 2,
+  START_VALUE = 4,
+  END_VALUE = 8,
+  EMPTY_VALUE = 16,
+  NOTHING = 32,
+  NEXT_HEADER = 64,
+  END_VALUE_AND_NEXT_HEADER = 128,
+  ACTION_ERROR = 0
+};
+
 // |        x           |  Newline   |      Whitespace      |    Colon     |       Other       |
 // |--------------------|------------|----------------------|--------------|-------------------|
 // |Line Start          |    DONE    |                      |              |   First String    |
@@ -218,12 +230,20 @@ enum __MH_HEADER_PARSER_TOKEN {
 // |During Value        | Line Start |   After Whitespace   | During Value |   During Value    |
 // |After Whitespace    | Line Start |   After Whitespace   | During Value |   During Value    |
 
-uint8_t state_token_to_state[5][4] = {
+enum __MH_HEADER_PARSER_STATE state_token_to_state[5][4] = {
   {DONE,        STATE_ERROR,      STATE_ERROR,  FIRST_STRING}, // Line Start
   {STATE_ERROR, STATE_ERROR,      AFTER_KEY,    FIRST_STRING}, // First String
   {LINE_START,  AFTER_KEY,        STATE_ERROR,  DURING_VALUE}, // After Key
   {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE}, // During Value
   {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE} // After Whitespace
+};
+
+enum __MH_HEADER_PARSER_ACTION state_token_to_action[5][4] = {
+  {NOTHING,        ACTION_ERROR,      ACTION_ERROR,  START_KEY}, // Line Start
+  {ACTION_ERROR, ACTION_ERROR,      END_KEY,    NOTHING}, // First String
+  {NEXT_HEADER,  NOTHING, ACTION_ERROR,  START_VALUE}, // After Key
+  {END_VALUE_AND_NEXT_HEADER,  END_VALUE, NOTHING, NOTHING}, // During Value
+  {NEXT_HEADER,  NOTHING, NOTHING, NOTHING} // After Whitespace
 };
 
 static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
