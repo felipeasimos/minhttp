@@ -14,7 +14,7 @@ digraph HeaderParser {
   "After Key" -> "During Value" [label="other (start of value)"];
   "During Value" -> "Line Start" [label="newline (end of value)"];
   "During Value" -> "During Value" [label="other"];
-  "During Value" -> "After Value" [label="whitespace (end of value)"];
+  "During Value" -> "After Value" [label="whitespace (possible end of value)"];
   "After Value" -> "After Value" [label="whitespace"];
   "After Value" -> "Line Start" [label="newline"];
 }

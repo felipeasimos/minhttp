@@ -190,7 +190,7 @@ enum __MH_HEADER_PARSER_STATE {
   FIRST_STRING = 's',
   AFTER_KEY = 'K',
   DURING_VALUE = 'v',
-  AFTER_VALUE = 'V',
+  AFTER_WHITESPACE = 'w',
   DONE = 'D'
 };
 
@@ -290,21 +290,26 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
             break;
           }
           case WHITESPACE: {
-            state = AFTER_VALUE;
+            state = AFTER_WHITESPACE;
             headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-            header_counter++;
             break;
           }
+          case COLON: break;
           case OTHER: break;
           default: return (void*)ERROR;
         }
         break;
       }
-      case AFTER_VALUE: {
+      case AFTER_WHITESPACE: {
         switch(token) {
           case WHITESPACE: break;
           case NEWLINE: {
             state = LINE_START;
+            header_counter++;
+            break;
+          }
+          case OTHER: {
+            state = DURING_VALUE;
             break;
           }
           default: return (void*)ERROR;
