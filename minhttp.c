@@ -186,20 +186,44 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
 }
 
 enum __MH_HEADER_PARSER_STATE {
-  LINE_START = ' ',
-  FIRST_STRING = 's',
-  AFTER_KEY = 'K',
-  DURING_VALUE = 'v',
-  AFTER_WHITESPACE = 'w',
-  DONE = 'D'
+  LINE_START = 0,
+  FIRST_STRING = 1,
+  AFTER_KEY = 2,
+  DURING_VALUE = 3,
+  AFTER_WHITESPACE = 4,
+  DONE = 5,
+  STATE_ERROR = 6
 };
 
+// enum __MH_HEADER_PARSER_TOKEN {
+//   NEWLINE = 0,
+//   WHITESPACE = 1,
+//   COLON = 2,
+//   OTHER = 3,
+// };
+
 enum __MH_HEADER_PARSER_TOKEN {
-  WHITESPACE = ' ',
-  COLON = ':',
-  NEWLINE = '\n',
-  OTHER = 'O',
-  ERROR = 0
+  NEWLINE = 0,
+  WHITESPACE = 1,
+  COLON = 2,
+  OTHER = 3,
+  TOKEN_ERROR = 4,
+};
+
+// |        x           |  Newline   |      Whitespace      |    Colon     |       Other       |
+// |--------------------|------------|----------------------|--------------|-------------------|
+// |Line Start          |    DONE    |                      |              |   First String    |
+// |First String        |            |                      |  After Key   |   First String    |
+// |After Key           | Line Start |      After Key       |              |   During Value    |
+// |During Value        | Line Start |   After Whitespace   | During Value |   During Value    |
+// |After Whitespace    | Line Start |   After Whitespace   | During Value |   During Value    |
+
+uint8_t state_token_to_state[5][4] = {
+  {DONE,        STATE_ERROR,      STATE_ERROR,  FIRST_STRING}, // Line Start
+  {STATE_ERROR, STATE_ERROR,      AFTER_KEY,    FIRST_STRING}, // First String
+  {LINE_START,  AFTER_KEY,        STATE_ERROR,  DURING_VALUE}, // After Key
+  {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE}, // During Value
+  {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE} // After Whitespace
 };
 
 static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
@@ -210,23 +234,29 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
       return data + 1;
     }
     // whitespace
+    case ' ':
     case '\t': {
       *token = WHITESPACE;
       return data + 1;
     }
     // newline
     case '\r': {
-      if(data + 1 == data_end || *(data + 1) != '\n') return (void*)ERROR;
+      if(data + 1 == data_end || *(data + 1) != '\n') return NULL;
       data++;
     }
-    case WHITESPACE:
-    case NEWLINE:
-    case COLON: {}
+    case '\n': {
+      *token = NEWLINE;
+      return data + 1;
+    }
+    case ':': {
+      *token = COLON;
+      return data + 1;
+    }
   }
-  *token = *data;
-  return data + 1;
+  return NULL;
 }
 
+#include <stdio.h>
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   enum __MH_HEADER_PARSER_STATE state = LINE_START;
   enum __MH_HEADER_PARSER_TOKEN token;
@@ -246,7 +276,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
             state = DONE;
             break;
           }
-          default: return (void*)ERROR;
+          default: return NULL;
         }
         break;
       }
@@ -258,7 +288,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
             break;
           }
           case OTHER: break;
-          default: return (void*)ERROR;
+          default: return NULL;
         }
         break;
       }
@@ -277,7 +307,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
             headers[header_counter].header_value_begin = data;
             break;
           }
-          default: return (void*)ERROR;
+          default: return NULL;
         }
         break;
       }
@@ -296,7 +326,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
           }
           case COLON: break;
           case OTHER: break;
-          default: return (void*)ERROR;
+          default: return NULL;
         }
         break;
       }
@@ -308,15 +338,16 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
             header_counter++;
             break;
           }
+          case COLON:
           case OTHER: {
             state = DURING_VALUE;
             break;
           }
-          default: return (void*)ERROR;
+          default: return NULL;
         }
         break;
       }
-      default: return (void*)ERROR;
+      default: return NULL;
     }
     data = next_data;
   }

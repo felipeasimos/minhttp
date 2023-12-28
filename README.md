@@ -63,3 +63,12 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 |After Key           | newline(empty value)  |                           |    whitespace     |    other(start of value) |                                   |         |
 |During Value        | newline(end of value) |                           |                   |        other/colon       | whitespace(possible end of value) |         |
 |After Whitespace    | newline(end of value) |                           |                   |          other           |             whitespace            |         |
+
+
+|        x           |  Newline   |      Whitespace      |    Colon     |       Other       |
+|--------------------|------------|----------------------|--------------|-------------------|
+|Line Start          |    DONE    |                      |              |   First String    |
+|First String        |            |                      |  After Key   |   First String    |
+|After Key           | Line Start |      After Key       |              |   During Value    |
+|During Value        | Line Start |   After Whitespace   | During Value |   During Value    |
+|After Whitespace    | Line Start |   After Whitespace   | During Value |   During Value    |

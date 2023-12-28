@@ -115,7 +115,7 @@ ctdd_test(parse_headers_simple_test) {
 
 ctdd_test(parse_headers_partial_test) {
   char* data = mh_parse_headers(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, &num_headers);
-  ctdd_assert(data == NULL, "data is wrong");
+  ctdd_assert(data == NULL, "data is NULL");
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
