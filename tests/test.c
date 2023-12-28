@@ -24,6 +24,11 @@ char* multiline_success_example = "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n";
 char* trailing_colon_example = "GET / HTTP/1.0\r\nfoo : ab\r\n\r\n";
 char* trailing_value_example = "GET / HTTP/1.0\r\nfoo: a \t \r\n\r\n";
 char* empty_name_example = "GET / HTTP/1.0\r\n:a\r\n\r\n";
+char* bench_example = "GET /wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg HTTP/1.1\r\n" \
+    "User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3\r\n" \
+    "Cookie: wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; "                                                          \
+    "__utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; "                                                             \
+    "__utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral\r\n";
 
 char* nul_in_method_example = "G\0T / HTTP/1.0\r\n\r\n";
 char* tab_in_method_example = "G\tT / HTTP/1.0\r\n\r\n";
@@ -83,6 +88,14 @@ ctdd_test(parse_request_first_line_multiple_whitespace_test) {
   ctdd_assert(version == HTTP_1, "version is wrong");
 }
 
+ctdd_test(parse_request_first_line_bench_test) {
+  char* data = mh_parse_request_first_line(bench_example, bench_example + strlen(bench_example), &method, path, &path_len, &version);
+  ctdd_assert(data == bench_example + 75, "data is wrong");
+  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strcmp(path, "/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg") == 0, "path is wrong");
+  ctdd_assert(version == HTTP_1_1, "version is wrong");
+}
+
 ctdd_test_suite(suite_parse_request_first_line) {
   ctdd_run_test(parse_request_first_line_simple_test);
   ctdd_run_test(parse_request_first_line_test_headers_test);
@@ -90,6 +103,7 @@ ctdd_test_suite(suite_parse_request_first_line) {
   ctdd_run_test(parse_request_first_line_tab_in_method_test);
   ctdd_run_test(parse_request_first_line_invalid_method_test);
   ctdd_run_test(parse_request_first_line_multiple_whitespace_test);
+  ctdd_run_test(parse_request_first_line_bench_test);
 }
 
 ctdd_test(parse_headers_simple_test) {
@@ -187,6 +201,28 @@ ctdd_test(parse_headers_empty_name_example_test) {
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
+ctdd_test(parse_headers_bench_test) {
+  char* data = mh_parse_headers(bench_example + 75, bench_example + strlen(bench_example), headers, &num_headers);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == bench_example + strlen(bench_example), "data is wrong");
+  ctdd_assert(num_headers == 2, "num_headers is wrong");
+
+  ctdd_assert(headers[0].header_key_len == strlen("User-Agent"), "header[0] key len is wrong");
+  ctdd_assert(strncmp(headers[0].header_key_begin, "User-Agent", headers[0].header_key_len) == 0, "header[0] key is wrong");
+  ctdd_assert(headers[0].header_value_len == strlen("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"), "header[0] value len is wrong");
+  ctdd_assert(strncmp(headers[0].header_value_begin, "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3", headers[0].header_value_len) == 0, "header[0] value is wrong");
+
+  ctdd_assert(headers[1].header_key_len == strlen("Cookie"), "header[1] key len is wrong");
+  ctdd_assert(strncmp(headers[1].header_key_begin, "Cookie", headers[1].header_key_len) == 1, "header[1] key is wrong");
+  ctdd_assert(headers[1].header_value_len == strlen("wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; __utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; __utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral"), "header[1] value len is wrong");
+  ctdd_assert(strncmp(headers[1].header_value_begin, "wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; __utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; __utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral", headers[1].header_value_len) == 1, "header[1] value is wrong");
+}
+
+// char* bench_example = "GET /wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg HTTP/1.1\r\n" \
+    // "User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3\r\n" \
+    "Cookie: wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; "                                                          \
+    "__utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; "                                                             \
+    "__utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral\r\n";
 ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_simple_test);
   ctdd_run_test(parse_headers_partial_test);
@@ -197,6 +233,7 @@ ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_trailing_colon_example_test);
   ctdd_run_test(parse_headers_trailing_value_example_test);
   ctdd_run_test(parse_headers_empty_name_example_test);
+  ctdd_run_test(parse_headers_bench_test);
 }
 
 ctdd_test(parse_response_first_line_1_1_test) {

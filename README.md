@@ -44,9 +44,8 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [ ] request builder
 - [ ] benchmarking and optimizations
     - [ ] enable NULL arguments for faster parsing
-    - [ ] benchmark against other http parsers
-        - [ ] picohttpparser
-        - [ ] llhttp
+    - [x] benchmark against other http parsers
+        - [x] picohttpparser
     - [ ] add likely and unlikely in all appropriate jumps
     - [ ] use token map for state machine instead of switch statements
     - [ ] add code coverage percentage

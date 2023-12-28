@@ -114,12 +114,22 @@ unsigned long picohttpparser_benchmark() {
 unsigned long llhttp_benchmark() {
 }
 
+unsigned long per_second(unsigned long elapsed_microsecs, unsigned long total_bench_objs) {
+  return (1000000 * total_bench_objs) / elapsed_microsecs;
+}
+
 int main() {
 
+  unsigned long total_requests = REPETITIONS * num_requests;
   unsigned long minhttp_microsecs = minhttp_benchmark();
-  printf("minhttp: %lu.%.06lu\n", minhttp_microsecs/1000000, minhttp_microsecs % 1000000);
+  printf("minhttp:\n");
+  printf("\ttime elapsed: %lu.%.06lu\n", minhttp_microsecs/1000000, minhttp_microsecs % 1000000);
+  printf("\trequests per second: %lu reqs/sec\n", per_second(minhttp_microsecs, total_requests));
+
   unsigned long picohttpparser_microsecs = picohttpparser_benchmark();
-  printf("picohttpparser: %lu.%.06lu\n", picohttpparser_microsecs/1000000, picohttpparser_microsecs % 1000000);
+  printf("picohttpparser:\n");
+  printf("\ttime elapsed: %lu.%.06lu\n", picohttpparser_microsecs/1000000, picohttpparser_microsecs % 1000000);
+  printf("\trequests per second: %lu reqs/sec\n", per_second(picohttpparser_microsecs, total_requests));
 
   return 0;
 }
