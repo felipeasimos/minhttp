@@ -294,117 +294,117 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
 
     enum __MH_HEADER_PARSER_ACTION action = state_token_to_action[state][token];
 
-    // switch(action) {
-    //   case START_KEY: {
-    //       headers[header_counter].header_key_begin = data;
-    //       break;
-    //   }
-    //   case END_KEY: {
-    //       headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
-    //       break;
-    //   }
-    //   case START_VALUE: {
-    //       headers[header_counter].header_value_begin = data;
-    //       break;
-    //   }
-    //   case END_VALUE: {
-    //       headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-    //       break;
-    //   }
-    //   case EMPTY_VALUE: {
-    //       headers[header_counter].header_value_begin = NULL;
-    //       headers[header_counter].header_value_len = 0;
-    //       break;
-    //   }
-    //   case END_VALUE_AND_NEXT_HEADER: {
-    //       headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-    //   }
-    //   case NEXT_HEADER: {
-    //       header_counter++;
-    //       break;
-    //   }
-    //   case ACTION_ERROR: {
-    //       return NULL;
-    //   }
-    //   case NOTHING: {}
-    // }
-
-    switch(state) {
-      case LINE_START: {
-        switch(token) {
-          case OTHER: {
-            headers[header_counter].header_key_begin = data;
-            break;
-          }
-          case NEWLINE: {
-            break;
-          }
-          default: return NULL;
-        }
-        break;
+    switch(action) {
+      case START_KEY: {
+          headers[header_counter].header_key_begin = data;
+          break;
       }
-      case FIRST_STRING: {
-        switch(token) {
-          case COLON: {
-            headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
-            break;
-          }
-          case OTHER: break;
-          default: return NULL;
-        }
-        break;
+      case END_KEY: {
+          headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
+          break;
       }
-      case AFTER_KEY: {
-        switch(token) {
-          case WHITESPACE: break;
-          case NEWLINE: {
-            headers[header_counter].header_value_begin = NULL;
-            headers[header_counter].header_value_len = 0;
-            header_counter++;
-            break;
-          }
-          case OTHER: {
-            headers[header_counter].header_value_begin = data;
-            break;
-          }
-          default: return NULL;
-        }
-        break;
+      case START_VALUE: {
+          headers[header_counter].header_value_begin = data;
+          break;
       }
-      case DURING_VALUE: {
-        switch(token) {
-          case NEWLINE:{
-            headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-            header_counter++;
-            break;
-          }
-          case WHITESPACE: {
-            headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-            break;
-          }
-          case COLON: break;
-          case OTHER: break;
-          default: return NULL;
-        }
-        break;
+      case END_VALUE: {
+          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+          break;
       }
-      case AFTER_WHITESPACE: {
-        switch(token) {
-          case WHITESPACE: break;
-          case NEWLINE: {
-            header_counter++;
-            break;
-          }
-          case COLON:
-          case OTHER: {
-            break;
-          }
-          default: return NULL;
-        }
-        break;
+      case EMPTY_VALUE: {
+          headers[header_counter].header_value_begin = NULL;
+          headers[header_counter].header_value_len = 0;
+          break;
       }
-      default: return NULL;
+      case END_VALUE_AND_NEXT_HEADER: {
+          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+      }
+      case NEXT_HEADER: {
+          header_counter++;
+          break;
+      }
+      case ACTION_ERROR: {
+          return NULL;
+      }
+      case NOTHING: {}
     }
+
+    // switch(state) {
+    //   case LINE_START: {
+    //     switch(token) {
+    //       case OTHER: {
+    //         headers[header_counter].header_key_begin = data;
+    //         break;
+    //       }
+    //       case NEWLINE: {
+    //         break;
+    //       }
+    //       default: return NULL;
+    //     }
+    //     break;
+    //   }
+    //   case FIRST_STRING: {
+    //     switch(token) {
+    //       case COLON: {
+    //         headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
+    //         break;
+    //       }
+    //       case OTHER: break;
+    //       default: return NULL;
+    //     }
+    //     break;
+    //   }
+    //   case AFTER_KEY: {
+    //     switch(token) {
+    //       case WHITESPACE: break;
+    //       case NEWLINE: {
+    //         headers[header_counter].header_value_begin = NULL;
+    //         headers[header_counter].header_value_len = 0;
+    //         header_counter++;
+    //         break;
+    //       }
+    //       case OTHER: {
+    //         headers[header_counter].header_value_begin = data;
+    //         break;
+    //       }
+    //       default: return NULL;
+    //     }
+    //     break;
+    //   }
+    //   case DURING_VALUE: {
+    //     switch(token) {
+    //       case NEWLINE:{
+    //         headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+    //         header_counter++;
+    //         break;
+    //       }
+    //       case WHITESPACE: {
+    //         headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+    //         break;
+    //       }
+    //       case COLON: break;
+    //       case OTHER: break;
+    //       default: return NULL;
+    //     }
+    //     break;
+    //   }
+    //   case AFTER_WHITESPACE: {
+    //     switch(token) {
+    //       case WHITESPACE: break;
+    //       case NEWLINE: {
+    //         header_counter++;
+    //         break;
+    //       }
+    //       case COLON:
+    //       case OTHER: {
+    //         break;
+    //       }
+    //       default: return NULL;
+    //     }
+    //     break;
+    //   }
+    //   default: return NULL;
+    // }
     state = state_token_to_state[state][token];
     data = next_data;
   }
