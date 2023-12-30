@@ -276,6 +276,14 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
   return NULL;
 }
 
+// enum __MH_HEADER_PARSER_ACTION state_token_to_action[5][4] = {
+//   {NOTHING,        ACTION_ERROR,      ACTION_ERROR,  START_KEY}, // Line Start
+//   {ACTION_ERROR, ACTION_ERROR,      END_KEY,    NOTHING}, // First String
+//   {NEXT_HEADER,  NOTHING, ACTION_ERROR,  START_VALUE}, // After Key
+//   {END_VALUE_AND_NEXT_HEADER,  END_VALUE, NOTHING, NOTHING}, // During Value
+//   {NEXT_HEADER,  NOTHING, NOTHING, NOTHING} // After Whitespace
+// };
+
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   enum __MH_HEADER_PARSER_STATE state = LINE_START;
   enum __MH_HEADER_PARSER_TOKEN token;
@@ -283,16 +291,52 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
   while(header_counter < *num_headers && state != DONE) {
     char* next_data = NULL;
     if(!(next_data = _mh_parse_headers_token(data, data_end, &token))) return NULL;
+
+    enum __MH_HEADER_PARSER_ACTION action = state_token_to_action[state][token];
+
+    // switch(action) {
+    //   case START_KEY: {
+    //       headers[header_counter].header_key_begin = data;
+    //       break;
+    //   }
+    //   case END_KEY: {
+    //       headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
+    //       break;
+    //   }
+    //   case START_VALUE: {
+    //       headers[header_counter].header_value_begin = data;
+    //       break;
+    //   }
+    //   case END_VALUE: {
+    //       headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+    //       break;
+    //   }
+    //   case EMPTY_VALUE: {
+    //       headers[header_counter].header_value_begin = NULL;
+    //       headers[header_counter].header_value_len = 0;
+    //       break;
+    //   }
+    //   case END_VALUE_AND_NEXT_HEADER: {
+    //       headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
+    //   }
+    //   case NEXT_HEADER: {
+    //       header_counter++;
+    //       break;
+    //   }
+    //   case ACTION_ERROR: {
+    //       return NULL;
+    //   }
+    //   case NOTHING: {}
+    // }
+
     switch(state) {
       case LINE_START: {
         switch(token) {
           case OTHER: {
-            state = FIRST_STRING;
             headers[header_counter].header_key_begin = data;
             break;
           }
           case NEWLINE: {
-            state = DONE;
             break;
           }
           default: return NULL;
@@ -302,7 +346,6 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
       case FIRST_STRING: {
         switch(token) {
           case COLON: {
-            state = AFTER_KEY;
             headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
             break;
           }
@@ -315,14 +358,12 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
         switch(token) {
           case WHITESPACE: break;
           case NEWLINE: {
-            state = LINE_START;
             headers[header_counter].header_value_begin = NULL;
             headers[header_counter].header_value_len = 0;
             header_counter++;
             break;
           }
           case OTHER: {
-            state = DURING_VALUE;
             headers[header_counter].header_value_begin = data;
             break;
           }
@@ -333,13 +374,11 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
       case DURING_VALUE: {
         switch(token) {
           case NEWLINE:{
-            state = LINE_START;
             headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
             header_counter++;
             break;
           }
           case WHITESPACE: {
-            state = AFTER_WHITESPACE;
             headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
             break;
           }
@@ -353,13 +392,11 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
         switch(token) {
           case WHITESPACE: break;
           case NEWLINE: {
-            state = LINE_START;
             header_counter++;
             break;
           }
           case COLON:
           case OTHER: {
-            state = DURING_VALUE;
             break;
           }
           default: return NULL;
@@ -368,6 +405,7 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
       }
       default: return NULL;
     }
+    state = state_token_to_state[state][token];
     data = next_data;
   }
   *num_headers = header_counter;
