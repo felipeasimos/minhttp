@@ -276,7 +276,6 @@ static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __M
   return NULL;
 }
 
-#include <stdio.h>
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   enum __MH_HEADER_PARSER_STATE state = LINE_START;
   enum __MH_HEADER_PARSER_TOKEN token;
