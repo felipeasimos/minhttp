@@ -15,9 +15,9 @@
 
 #define EXPECT_NO_CHECK(x) CHECK_EOF(); if(unlikely(*data != x)) return NULL; data++;
 
-#define EXPECT(x) CHECK_EOF(); EXPECT_NO_CHECK(x); if(data_end <= data) return NULL;
+#define EXPECT(x) CHECK_EOF(); EXPECT_NO_CHECK(x); if(unlikely(data_end <= data)) return NULL;
 
-#define UNTIL_NOT(x) for(; data != data_end && *data == x; data++) CHECK_EOF();
+#define UNTIL_NOT(x) for(; unlikely(data != data_end && *data == x); data++) CHECK_EOF();
 
 #define EXPECT_NEWLINE() do {\
   if(data_end == data) return NULL;\
@@ -328,83 +328,6 @@ char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t
       }
       case NOTHING: {}
     }
-
-    // switch(state) {
-    //   case LINE_START: {
-    //     switch(token) {
-    //       case OTHER: {
-    //         headers[header_counter].header_key_begin = data;
-    //         break;
-    //       }
-    //       case NEWLINE: {
-    //         break;
-    //       }
-    //       default: return NULL;
-    //     }
-    //     break;
-    //   }
-    //   case FIRST_STRING: {
-    //     switch(token) {
-    //       case COLON: {
-    //         headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
-    //         break;
-    //       }
-    //       case OTHER: break;
-    //       default: return NULL;
-    //     }
-    //     break;
-    //   }
-    //   case AFTER_KEY: {
-    //     switch(token) {
-    //       case WHITESPACE: break;
-    //       case NEWLINE: {
-    //         headers[header_counter].header_value_begin = NULL;
-    //         headers[header_counter].header_value_len = 0;
-    //         header_counter++;
-    //         break;
-    //       }
-    //       case OTHER: {
-    //         headers[header_counter].header_value_begin = data;
-    //         break;
-    //       }
-    //       default: return NULL;
-    //     }
-    //     break;
-    //   }
-    //   case DURING_VALUE: {
-    //     switch(token) {
-    //       case NEWLINE:{
-    //         headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-    //         header_counter++;
-    //         break;
-    //       }
-    //       case WHITESPACE: {
-    //         headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-    //         break;
-    //       }
-    //       case COLON: break;
-    //       case OTHER: break;
-    //       default: return NULL;
-    //     }
-    //     break;
-    //   }
-    //   case AFTER_WHITESPACE: {
-    //     switch(token) {
-    //       case WHITESPACE: break;
-    //       case NEWLINE: {
-    //         header_counter++;
-    //         break;
-    //       }
-    //       case COLON:
-    //       case OTHER: {
-    //         break;
-    //       }
-    //       default: return NULL;
-    //     }
-    //     break;
-    //   }
-    //   default: return NULL;
-    // }
     state = state_token_to_state[state][token];
     data = next_data;
   }
