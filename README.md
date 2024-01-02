@@ -4,11 +4,14 @@
 [![MacOS](https://github.com/asimos-bot/minhttp/actions/workflows/test-macos.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/test-macos.yml)
 [![Windows (MSVC)](https://github.com/asimos-bot/minhttp/actions/workflows/test-windows.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/test-windows.yml)
 [![No Dependencies](https://github.com/asimos-bot/minhttp/actions/workflows/no-includes.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/no-includes.yml)
+![Lines of Code Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/asimos-bot/1062ce0f390bb2b6458d29f225cc08b5/raw/minhttp__heads_feat-coverage_coverage.json)
 
 Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses.
 
 * no memory allocations
 * no dependencies
+
+Inspired by picohttpparser. This project aims to have better performance and smaller size while having a builder feature.
 
 ### How to Use
 
@@ -51,5 +54,5 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [x] separate benchmark for header parsing and for first line parsing
     - [ ] enable NULL arguments for faster parsing
 - [ ] misc
-    - [ ] add code coverage percentage
+    - [x] add code coverage percentage
     - [ ] add documentation on how to use
