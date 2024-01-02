@@ -32,34 +32,24 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 
 ### Roadmap
 
-- [x] parsers
+- [ ] parsers
     - [x] pass all tests for request first line from picohttpparser
     - [x] pass all tests for header parser from picohttpparser
     - [x] pass all tests for response first line parser from picohttpparser
+    - [ ] parse only requested headers (`mh_parse_headers_set`)
+        - [ ] get max key len automatically
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
     - [ ] response builder
     - [ ] request first line builder
-    - [ ] request builder
 - [ ] benchmarking and optimizations
+    - [x] benchmark against other http parsers
+        - [x] picohttpparser
+    - [x] straight-forward parsing with no state machine
+    - [x] add likely and unlikely in all appropriate jumps
+    - [x] separate benchmark for header parsing and for first line parsing
     - [ ] enable NULL arguments for faster parsing
-    - [ ] benchmark against other http parsers
-        - [ ] picohttpparser
-        - [ ] llhttp
-    - [ ] add likely and unlikely in all appropriate jumps
-    - [ ] use token map for state machine instead of switch statements
-    - [ ] parse only requested headers (`mh_parse_headers_set`)
-        - [ ] get max key len automatically
-
-### Header Parser State Machine
-
-![Header Parser State Machine](./header-parser-state-machine.svg)
-
-|        x           |      Line Start      |       First String        |     After Key     |       During Value       |        After Value        |  DONE   |
-|--------------------|----------------------|---------------------------|-------------------|--------------------------|---------------------------|---------|
-|Line Start          |                      |    other(start of key)    |                   |                          |                           | newline |
-|First String        |                      |           other           | colon(end of key) |                          |                           |         |
-|After Key           | newline(empty value) |                           |    whitespace     |    other(start of value) |                           |         |
-|During Value        |        newline       |                           |                   |          other           | whitespace(end of value)  |         |
-|After Value         |        newline       |                           |                   |                          |         whitespace        |         |
+- [ ] misc
+    - [ ] add code coverage percentage
+    - [ ] add documentation on how to use
