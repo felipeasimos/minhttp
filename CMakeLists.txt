@@ -23,8 +23,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
     # add 'coverage' command to ninja/make
     add_custom_target(coverage
         COMMAND mkdir -p coverage
+        COMMAND ./test -q
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
+    set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
     add_custom_command(TARGET coverage
         COMMAND gcov -n -H ${CMAKE_SOURCE_DIR}/minhttp.c -o ${OBJECT_DIR}/minhttp.c.gcda* > CoverageSummary.tmp
         COMMAND cat CoverageSummary.tmp | grep -E '^Lines executed:' | head -n 1 | cut -d ':' -f 2 | cut -d ' ' -f 1
