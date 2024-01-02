@@ -10,6 +10,8 @@ Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses.
 * no memory allocations
 * no dependencies
 
+Inspired by picohttpparser. This project aims to have better performance and smaller size while having a builder feature.
+
 ### How to Use
 
 There is two options:

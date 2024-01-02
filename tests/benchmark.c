@@ -148,7 +148,7 @@ int main() {
   double performance = 1 - (double)picohttpparser_microsecs/(double)minhttp_microsecs;
   if(performance < 0) performance = 1 -performance;
   printf("total:\n");
-  printf("\tminhttp performance compared to picotthpparser: %.2f%%\n", performance);
+  printf("\tminhttp performance compared to picotthpparser: %.2f%%\n", 100 * performance);
 
   // header
   minhttp_microsecs = minhttp_header_benchmark();
@@ -156,7 +156,7 @@ int main() {
   performance = 1 - (double)picohttpparser_microsecs/(double)minhttp_microsecs;
   if(performance < 0) performance = 1 -performance;
   printf("headers:\n");
-  printf("\tminhttp performance compared to picotthpparser: %.2f%%\n", performance);
+  printf("\tminhttp performance compared to picotthpparser: %.2f%%\n", 100 * performance);
 
   return 0;
 }
