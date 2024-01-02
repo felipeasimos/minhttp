@@ -26,13 +26,13 @@
 #define REPETITIONS 100000
 #define MAX_BUFFER_LEN 1096
 
-char* requests[] = {
- "GET / HTTP/1.0\r\n\r\n", // char* simple_example
- "GET /hoge HTTP/1.1\r\nHost: example.com\r\nCookie: \r\n\r\n", // char* test_headers_example
- "GET /hoge HTTP/1.1\r\nHost: example.com\r\nUser-Agent: \343\201\262\343/1.0\r\n\r\n", // char* multibyte_example
- "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n", // char* multiline_success_example
- "GET / HTTP/1.0\r\nfoo: a \t \r\n\r\n", // char* trailing_value_example
- "GET   /   HTTP/1.0\r\n\r\n", // char* multiple_whitespace_example
+char* requests[] = { \
+ // "GET / HTTP/1.0\r\n\r\n", // char* simple_example
+ // "GET /hoge HTTP/1.1\r\nHost: example.com\r\nCookie: \r\n\r\n", // char* test_headers_example
+ // "GET /hoge HTTP/1.1\r\nHost: example.com\r\nUser-Agent: \343\201\262\343/1.0\r\n\r\n", // char* multibyte_example
+ // "GET / HTTP/1.0\r\nfoo: \r\nfoo: b\r\n\r\n", // char* multiline_success_example
+ // "GET / HTTP/1.0\r\nfoo: a \t \r\n\r\n", // char* trailing_value_example
+ // "GET   /   HTTP/1.0\r\n\r\n", // char* multiple_whitespace_example
  "GET /wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg HTTP/1.1\r\n"                                                \
     "Host: www.kittyhell.com\r\n"                                                                                                  \
     "User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 "             \
@@ -66,8 +66,8 @@ unsigned long minhttp_benchmark() {
   mh_method method;
   char path[MAX_BUFFER_LEN] = {0};
   uint32_t path_len = MAX_BUFFER_LEN;
-  uint32_t num_headers = 5;
-  mh_header headers[5] = {0};
+  uint32_t num_headers = 10;
+  mh_header headers[10] = {0};
 
   unsigned long sum = 0;
   for(unsigned long i = 0; i < REPETITIONS; i++) {
@@ -104,6 +104,7 @@ unsigned long picohttpparser_benchmark() {
           char* request = requests[j];
           int request_size = strlen(request);
           unsigned long start = get_microseconds();
+          // phr_parse_headers(request + 75, request_size - 75, headers, &num_headers, 0);
           phr_parse_request(request, request_size, &method, &method_len, &path, &path_len, &minor_version, headers, &num_headers, 0);
           sum += get_microseconds() - start;
         }
@@ -122,14 +123,15 @@ int main() {
 
   unsigned long total_requests = REPETITIONS * num_requests;
   unsigned long minhttp_microsecs = minhttp_benchmark();
-  printf("minhttp:\n");
-  printf("\ttime elapsed: %lu.%.06lu\n", minhttp_microsecs/1000000, minhttp_microsecs % 1000000);
-  printf("\trequests per second: %lu reqs/sec\n", per_second(minhttp_microsecs, total_requests));
+  // printf("minhttp:\n");
+  // printf("\ttime elapsed: %lu.%.06lu\n", minhttp_microsecs/1000000, minhttp_microsecs % 1000000);
+  // printf("\trequests per second: %lu reqs/sec\n", per_second(minhttp_microsecs, total_requests));
 
   unsigned long picohttpparser_microsecs = picohttpparser_benchmark();
-  printf("picohttpparser:\n");
-  printf("\ttime elapsed: %lu.%.06lu\n", picohttpparser_microsecs/1000000, picohttpparser_microsecs % 1000000);
-  printf("\trequests per second: %lu reqs/sec\n", per_second(picohttpparser_microsecs, total_requests));
+  // printf("picohttpparser:\n");
+  // printf("\ttime elapsed: %lu.%.06lu\n", picohttpparser_microsecs/1000000, picohttpparser_microsecs % 1000000);
+  // printf("\trequests per second: %lu reqs/sec\n", per_second(picohttpparser_microsecs, total_requests));
+  printf("picohttpparser/minhttp: %f\n", (double)picohttpparser_microsecs/(double)minhttp_microsecs);
 
   return 0;
 }

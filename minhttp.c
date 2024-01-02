@@ -36,7 +36,7 @@
   }\
 } while(0);
 
-char* _mh_parse_method(char* data, uint32_t data_len, mh_method* method) {
+static inline char* _mh_parse_method(char* data, uint32_t data_len, mh_method* method) {
   if(data_len < 3) return NULL;
   switch(*data) {
     // GET
@@ -101,7 +101,7 @@ char* _mh_parse_method(char* data, uint32_t data_len, mh_method* method) {
   return NULL;
 }
 
-char* _mh_parse_path(char* data, char* data_end, char* path, uint32_t* path_len) {
+static inline char* _mh_parse_path(char* data, char* data_end, char* path, uint32_t* path_len) {
   uint32_t limit = MIN(data_end - data, *path_len);
   uint32_t i = 0;
   for(; i < limit && data[i] != ' '; i++) {
@@ -113,7 +113,7 @@ char* _mh_parse_path(char* data, char* data_end, char* path, uint32_t* path_len)
 }
 
 
-char* _mh_parse_phrase(char* data, char* data_end, char* phrase, uint32_t* phrase_len) {
+static inline char* _mh_parse_phrase(char* data, char* data_end, char* phrase, uint32_t* phrase_len) {
   uint32_t limit = MIN(data_end - data, *phrase_len);
   uint32_t i = 0;
   for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++) {
@@ -123,7 +123,7 @@ char* _mh_parse_phrase(char* data, char* data_end, char* phrase, uint32_t* phras
   return &data[i];
 }
 
-char* _mh_parse_status_code(char* data, char* data_end, uint16_t* status) {
+static inline char* _mh_parse_status_code(char* data, char* data_end, uint16_t* status) {
   // buffer size left
   if(data_end - data < 3) return NULL;
   // are digits valid?
@@ -132,7 +132,7 @@ char* _mh_parse_status_code(char* data, char* data_end, uint16_t* status) {
   return data + 3;
 }
 
-char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
+static inline char* _mh_parse_version(char* data, char* data_end, mh_version* version) {
   if(data_end < data + 8) return NULL;
   EXPECT_NO_CHECK('H');
   EXPECT_NO_CHECK('T');
@@ -185,152 +185,55 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
   return data;
 }
 
-enum __MH_HEADER_PARSER_STATE {
-  LINE_START = 0,
-  FIRST_STRING = 1,
-  AFTER_KEY = 2,
-  DURING_VALUE = 3,
-  AFTER_WHITESPACE = 4,
-  DONE = 5,
-  STATE_ERROR = 6
-};
-
-// enum __MH_HEADER_PARSER_TOKEN {
-//   NEWLINE = 0,
-//   WHITESPACE = 1,
-//   COLON = 2,
-//   OTHER = 3,
-// };
-
-enum __MH_HEADER_PARSER_TOKEN {
-  NEWLINE = 0,
-  WHITESPACE = 1,
-  COLON = 2,
-  OTHER = 3,
-  TOKEN_ERROR = 4,
-};
-
-enum __MH_HEADER_PARSER_ACTION {
-  START_KEY = 1,
-  END_KEY = 2,
-  START_VALUE = 4,
-  END_VALUE = 8,
-  EMPTY_VALUE = 16,
-  NOTHING = 32,
-  NEXT_HEADER = 64,
-  END_VALUE_AND_NEXT_HEADER = 128,
-  ACTION_ERROR = 0
-};
-
-// |        x           |  Newline   |      Whitespace      |    Colon     |       Other       |
-// |--------------------|------------|----------------------|--------------|-------------------|
-// |Line Start          |    DONE    |                      |              |   First String    |
-// |First String        |            |                      |  After Key   |   First String    |
-// |After Key           | Line Start |      After Key       |              |   During Value    |
-// |During Value        | Line Start |   After Whitespace   | During Value |   During Value    |
-// |After Whitespace    | Line Start |   After Whitespace   | During Value |   During Value    |
-
-enum __MH_HEADER_PARSER_STATE state_token_to_state[5][4] = {
-  {DONE,        STATE_ERROR,      STATE_ERROR,  FIRST_STRING}, // Line Start
-  {STATE_ERROR, STATE_ERROR,      AFTER_KEY,    FIRST_STRING}, // First String
-  {LINE_START,  AFTER_KEY,        STATE_ERROR,  DURING_VALUE}, // After Key
-  {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE}, // During Value
-  {LINE_START,  AFTER_WHITESPACE, DURING_VALUE, DURING_VALUE} // After Whitespace
-};
-
-enum __MH_HEADER_PARSER_ACTION state_token_to_action[5][4] = {
-  {NOTHING,        ACTION_ERROR,      ACTION_ERROR,  START_KEY}, // Line Start
-  {ACTION_ERROR, ACTION_ERROR,      END_KEY,    NOTHING}, // First String
-  {NEXT_HEADER,  NOTHING, ACTION_ERROR,  START_VALUE}, // After Key
-  {END_VALUE_AND_NEXT_HEADER,  END_VALUE, NOTHING, NOTHING}, // During Value
-  {NEXT_HEADER,  NOTHING, NOTHING, NOTHING} // After Whitespace
-};
-
-static inline char* _mh_parse_headers_token(char* data, char* data_end, enum __MH_HEADER_PARSER_TOKEN* token) { 
-  CHECK_EOF();
-  switch(*data) {
-    default: {
-      *token = OTHER;
-      return data + 1;
-    }
-    // whitespace
-    case ' ':
-    case '\t': {
-      *token = WHITESPACE;
-      return data + 1;
-    }
-    // newline
-    case '\r': {
-      if(data + 1 == data_end || *(data + 1) != '\n') return NULL;
-      data++;
-    }
-    case '\n': {
-      *token = NEWLINE;
-      return data + 1;
-    }
-    case ':': {
-      *token = COLON;
-      return data + 1;
+static inline char* _mh_parse_header_key(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
+  *token_begin = NULL;
+  *token_len = 0;
+  if(*data == ':') return NULL;
+  for(; data < data_end && *data != ':'; data++) {
+    if(*data == ' ' || *data == '\t') return NULL;
+    if(!*token_begin) {
+        *token_begin = data;
     }
   }
-  return NULL;
+  *token_len = data - *token_begin;
+  return data == data_end ? NULL : data;
 }
 
-// enum __MH_HEADER_PARSER_ACTION state_token_to_action[5][4] = {
-//   {NOTHING,        ACTION_ERROR,      ACTION_ERROR,  START_KEY}, // Line Start
-//   {ACTION_ERROR, ACTION_ERROR,      END_KEY,    NOTHING}, // First String
-//   {NEXT_HEADER,  NOTHING, ACTION_ERROR,  START_VALUE}, // After Key
-//   {END_VALUE_AND_NEXT_HEADER,  END_VALUE, NOTHING, NOTHING}, // During Value
-//   {NEXT_HEADER,  NOTHING, NOTHING, NOTHING} // After Whitespace
-// };
-
-char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
-  enum __MH_HEADER_PARSER_STATE state = LINE_START;
-  enum __MH_HEADER_PARSER_TOKEN token;
-  uint32_t header_counter = 0;
-  while(header_counter < *num_headers && state != DONE) {
-    char* next_data = NULL;
-    if(!(next_data = _mh_parse_headers_token(data, data_end, &token))) return NULL;
-
-    enum __MH_HEADER_PARSER_ACTION action = state_token_to_action[state][token];
-
-    switch(action) {
-      case START_KEY: {
-          headers[header_counter].header_key_begin = data;
-          break;
+static inline char* _mh_parse_header_value(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
+  *token_begin = NULL;
+  *token_len = 0;
+  for(; data < data_end && *data != '\n'; data++) {
+    if(!*token_begin) {
+      if(*data != ' ' && *data != '\t') {
+        *token_begin = data;
       }
-      case END_KEY: {
-          headers[header_counter].header_key_len = data - headers[header_counter].header_key_begin;
-          break;
-      }
-      case START_VALUE: {
-          headers[header_counter].header_value_begin = data;
-          break;
-      }
-      case END_VALUE: {
-          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-          break;
-      }
-      case EMPTY_VALUE: {
-          headers[header_counter].header_value_begin = NULL;
-          headers[header_counter].header_value_len = 0;
-          break;
-      }
-      case END_VALUE_AND_NEXT_HEADER: {
-          headers[header_counter].header_value_len = data - headers[header_counter].header_value_begin;
-      }
-      case NEXT_HEADER: {
-          header_counter++;
-          break;
-      }
-      case ACTION_ERROR: {
-          return NULL;
-      }
-      case NOTHING: {}
     }
-    state = state_token_to_state[state][token];
-    data = next_data;
   }
+  *token_len = data - *token_begin;
+  return data == data_end ? NULL : data;
+}
+
+#include <stdio.h>
+char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
+  uint32_t header_counter = 0;
+  for(; header_counter < *num_headers; header_counter++) {
+    if((*data == '\r' && *(data + 1) == '\n') || *data == '\n') {
+      data += 1 + (*data != '\n');
+      goto done;
+    }
+    CHECK_EOF();
+    if((data = _mh_parse_header_key(data, data_end, &headers[header_counter].header_key_begin, &headers[header_counter].header_key_len)) == NULL) return NULL;
+    data++;
+    if((data = _mh_parse_header_value(data, data_end, &headers[header_counter].header_value_begin, &headers[header_counter].header_value_len)) == NULL) return NULL;
+    // deal with carriage return
+    if(headers[header_counter].header_value_len && headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == '\r') headers[header_counter].header_value_len--;
+    // deal with whitespace at the end of the line
+    while(headers[header_counter].header_value_len && (headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == ' ' || headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == '\t')) {
+      headers[header_counter].header_value_len--;
+    }
+    data++;
+  }
+done:
   *num_headers = header_counter;
   return data;
 }

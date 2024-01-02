@@ -45,9 +45,12 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 - [ ] benchmarking and optimizations
     - [x] benchmark against other http parsers
         - [x] picohttpparser
-    - [ ] separate benchmark in header parsing and first line parsing
+    - [ ] separate benchmark for header parsing and for first line parsing
     - [ ] straight-forward parsing with no state machine
-        - [ ] get `value_len` by checking whitespace before the next newline
+        - [ ] get `key_begin` by being index after newline
+        - [ ] get `key_len` by being everything before first colon
+        - [ ] get `value_begin` by being first non whitespace after colon
+        - [ ] get `value_len` by checking whitespaces before the next newline
     - [ ] enable NULL arguments for faster parsing
     - [ ] add likely and unlikely in all appropriate jumps
     - [ ] add code coverage percentage
