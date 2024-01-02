@@ -32,7 +32,7 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 
 ### Roadmap
 
-- [x] parsers
+- [ ] parsers
     - [x] pass all tests for request first line from picohttpparser
     - [x] pass all tests for header parser from picohttpparser
     - [x] pass all tests for response first line parser from picohttpparser
@@ -43,13 +43,13 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [ ] response first line builder
     - [ ] response builder
     - [ ] request first line builder
-    - [ ] request builder
 - [ ] benchmarking and optimizations
     - [x] benchmark against other http parsers
         - [x] picohttpparser
-    - [ ] separate benchmark for header parsing and for first line parsing
     - [x] straight-forward parsing with no state machine
-    - [ ] enable NULL arguments for faster parsing
     - [x] add likely and unlikely in all appropriate jumps
+    - [x] separate benchmark for header parsing and for first line parsing
+    - [ ] enable NULL arguments for faster parsing
 - [ ] misc
     - [ ] add code coverage percentage
+    - [ ] add documentation on how to use
