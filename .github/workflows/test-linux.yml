@@ -33,7 +33,7 @@ jobs:
       run: |
         echo "env:"
         cat $GITHUB_ENV
-        echo "COVERAGE=$(make coverage)" >> $GITHUB_ENV
+        echo "COVERAGE=$(make coverage | head -n 1)" >> $GITHUB_ENV
         echo "env:"
         cat $GITHUB_ENV       
         # var REF = 'refs/pull/27/merge.json';
