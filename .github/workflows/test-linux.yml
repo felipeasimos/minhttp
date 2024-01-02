@@ -31,8 +31,11 @@ jobs:
     - name: get coverage for badge
       working-directory: ${{github.workspace}}/build
       run: |
+        echo "env:"
+        cat $GITHUB_ENV
         echo "COVERAGE=$(make coverage)" >> $GITHUB_ENV
-        
+        echo "env:"
+        cat $GITHUB_ENV       
         # var REF = 'refs/pull/27/merge.json';
         REF=${{ github.ref }}
         # console.log('github.ref: ' + REF);
@@ -45,7 +48,8 @@ jobs:
         echo "branch name: $BRANCH_NAME"
         # process.env.BRANCH = 'pull_27';
         echo "BRANCH=${BRANCH_NAME}" >> $GITHUB_ENV
-        cat $GITHUB_ENV
+        echo "env:"
+        cat $GITHUB_ENV       
     - name: create coverage badge
       uses: schneegans/dynamic-badges-action@v1.7.0
       with:
