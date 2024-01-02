@@ -36,6 +36,8 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [x] pass all tests for request first line from picohttpparser
     - [x] pass all tests for header parser from picohttpparser
     - [x] pass all tests for response first line parser from picohttpparser
+    - [ ] parse only requested headers (`mh_parse_headers_set`)
+        - [ ] get max key len automatically
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
@@ -48,7 +50,6 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [ ] separate benchmark for header parsing and for first line parsing
     - [x] straight-forward parsing with no state machine
     - [ ] enable NULL arguments for faster parsing
-    - [ ] add likely and unlikely in all appropriate jumps
+    - [x] add likely and unlikely in all appropriate jumps
+- [ ] misc
     - [ ] add code coverage percentage
-    - [ ] parse only requested headers (`mh_parse_headers_set`)
-        - [ ] get max key len automatically
