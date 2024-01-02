@@ -23,7 +23,7 @@
 #endif
 #endif
 
-#define REPETITIONS 100000
+#define REPETITIONS 1000000
 #define MAX_BUFFER_LEN 1096
 
 char* requests[] = { \
@@ -110,9 +110,6 @@ unsigned long picohttpparser_benchmark() {
         }
     }
     return sum;
-}
-
-unsigned long llhttp_benchmark() {
 }
 
 unsigned long per_second(unsigned long elapsed_microsecs, unsigned long total_bench_objs) {
