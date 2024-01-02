@@ -44,10 +44,10 @@ jobs:
         # console.log(BRANCH_NAME); // 'pull_27' or 'heads_main'
         echo "branch name: $BRANCH_NAME"
         # process.env.BRANCH = 'pull_27';
-        echo "BRANCH=$(echo ${BRANCH_NAME})" >> $GITHUB_ENV
-        echo "github env: $GITHUB_ENV"
+        echo "BRANCH=${BRANCH_NAME}" >> $GITHUB_ENV
+        cat $GITHUB_ENV
     - name: create coverage badge
-      uses: schneegans/dynamic-badges-action@v1.0.0
+      uses: schneegans/dynamic-badges-action@v1.7.0
       with:
         auth: ${{ secrets.GIST_SECRET }}
         gistID: 1062ce0f390bb2b6458d29f225cc08b5
