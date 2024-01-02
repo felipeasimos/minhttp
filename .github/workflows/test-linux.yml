@@ -5,7 +5,7 @@ run-name: Testing push to ${{ github.ref }} by @${{ github.actor }}
 on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Coverage
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -28,3 +28,30 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       run: ./test
+    - name: get coverage for badge
+      working-directory: ${{github.workspace}}/build
+      run: |
+        echo "COVERAGE=$(make coverage)" >> $GITHUB_ENV
+        
+        # var REF = 'refs/pull/27/merge.json';
+        REF=${{ github.ref }}
+        # console.log('github.ref: ' + REF);
+        echo "github.ref: $REF"
+        # var PATHS = REF.split('/');
+        IFS='/' read -ra PATHS <<< "$REF"
+        # var BRANCH_NAME = PATHS[1] + '_' + PATHS[2];
+        BRANCH_NAME="${PATHS[1]}_${PATHS[2]}"
+        # console.log(BRANCH_NAME); // 'pull_27' or 'heads_main'
+        echo $BRANCH_NAME
+        # process.env.BRANCH = 'pull_27';
+        echo "BRANCH=$(echo ${BRANCH_NAME})" >> $GITHUB_ENV
+    - name: create coverage badge
+      uses: schneegans/dynamic-badges-action@v1.0.0
+      with:
+        auth: ${{ secrets.GIST_SECRET }}
+        gistID: 1062ce0f390bb2b6458d29f225cc08b5
+        filename: minhttp__${{ env.BRANCH }}_coverage.json
+        label: Test Coverage
+        message: ${{ env.COVERAGE }}
+        color: green
+        namedLogo: C
