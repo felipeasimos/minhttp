@@ -213,7 +213,6 @@ static inline char* _mh_parse_header_value(char* data, char* data_end, char** to
   return data == data_end ? NULL : data;
 }
 
-#include <stdio.h>
 char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   uint32_t header_counter = 0;
   for(; header_counter < *num_headers; header_counter++) {
