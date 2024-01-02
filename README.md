@@ -54,5 +54,5 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [x] separate benchmark for header parsing and for first line parsing
     - [ ] enable NULL arguments for faster parsing
 - [ ] misc
-    - [ ] add code coverage percentage
+    - [x] add code coverage percentage
     - [ ] add documentation on how to use
