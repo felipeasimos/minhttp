@@ -11,7 +11,7 @@
 #define unlikely(x) (x)
 #endif
 
-#define CHECK_EOF() if(data == data_end || data == 0x00) return NULL;
+#define CHECK_EOF() if(data == data_end) return NULL;
 
 #define EXPECT_NO_CHECK(x) CHECK_EOF(); if(unlikely(*data != x)) return NULL; data++;
 
@@ -101,24 +101,22 @@ static inline char* _mh_parse_method(char* data, uint32_t data_len, mh_method* m
   return NULL;
 }
 
-static inline char* _mh_parse_path(char* data, char* data_end, char* path, uint32_t* path_len) {
+static inline char* _mh_parse_path(char* data, char* data_end, char** path, uint32_t* path_len) {
   uint32_t limit = MIN(data_end - data, *path_len);
   uint32_t i = 0;
-  for(; i < limit && data[i] != ' '; i++) {
-    path[i] = data[i];
-  }
+  *path = data;
+  for(; i < limit && data[i] != ' '; i++);
   *path_len = &data[i] - data;
   for(; data[i] != ' '; i++);
   return &data[i];
 }
 
 
-static inline char* _mh_parse_phrase(char* data, char* data_end, char* phrase, uint32_t* phrase_len) {
+static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
   uint32_t limit = MIN(data_end - data, *phrase_len);
+  *phrase = data;
   uint32_t i = 0;
-  for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++) {
-    phrase[i] = data[i];
-  }
+  for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++);
   *phrase_len = &data[i] - data;
   return &data[i];
 }
@@ -157,7 +155,7 @@ static inline char* _mh_parse_version(char* data, char* data_end, mh_version* ve
   return data + 1;
 }
 
-char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, uint32_t* path_len, mh_version* version) {
+char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char** path, uint32_t* path_len, mh_version* version) {
   if(unlikely(data_end < data)) return NULL;
   data = _mh_parse_method(data, data_end - data, method);
   if(unlikely(!data)) return NULL;
@@ -170,7 +168,7 @@ char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method,
   EXPECT_NEWLINE();
 }
 
-char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, uint16_t* status, char* phrase, uint32_t* phrase_len) {
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, uint16_t* status, char** phrase, uint32_t* phrase_len) {
   if(unlikely(data_end < data)) return NULL;
   data = _mh_parse_version(data, data_end, version);
   if(unlikely(!data)) return NULL;
@@ -210,12 +208,20 @@ static inline char* _mh_parse_header_value(char* data, char* data_end, char** to
     }
   }
   *token_len = data - *token_begin;
-  return data == data_end ? NULL : data;
+  if(data == data_end) return NULL;
+  // deal with carriage return
+  if(likely(*token_len && (*token_begin)[(*token_len) - 1] == '\r')) (*token_len)--;
+  // deal with whitespace at the end of the line
+  while(likely((*token_len) && ((*token_begin)[(*token_len) - 1] == ' ' || (*token_begin)[(*token_len) - 1] == '\t'))) {
+    (*token_len)--;
+  }
+  return data;
 }
 
 static inline char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   uint32_t header_counter = 0;
   for(; header_counter < *num_headers; header_counter++) {
+    CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
       data += 1 + (*data != '\n');
       goto done;
@@ -224,12 +230,6 @@ static inline char* _mh_parse_headers(char* data, char* data_end, mh_header* hea
     if(unlikely((data = _mh_parse_header_key(data, data_end, &headers[header_counter].header_key_begin, &headers[header_counter].header_key_len)) == NULL)) return NULL;
     data++;
     if(unlikely((data = _mh_parse_header_value(data, data_end, &headers[header_counter].header_value_begin, &headers[header_counter].header_value_len)) == NULL)) return NULL;
-    // deal with carriage return
-    if(likely(headers[header_counter].header_value_len && headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == '\r')) headers[header_counter].header_value_len--;
-    // deal with whitespace at the end of the line
-    while(likely(headers[header_counter].header_value_len && (headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == ' ' || headers[header_counter].header_value_begin[headers[header_counter].header_value_len - 1] == '\t'))) {
-      headers[header_counter].header_value_len--;
-    }
     data++;
   }
 done:
