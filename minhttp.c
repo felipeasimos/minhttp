@@ -102,23 +102,20 @@ static inline char* _mh_parse_method(char* data, uint32_t data_len, mh_method* m
 }
 
 static inline char* _mh_parse_path(char* data, char* data_end, char** path, uint32_t* path_len) {
-  uint32_t limit = MIN(data_end - data, *path_len);
-  uint32_t i = 0;
+  char* limit = MIN(data_end, data + *path_len);
   *path = data;
-  for(; i < limit && data[i] != ' '; i++);
-  *path_len = &data[i] - data;
-  for(; data[i] != ' '; i++);
-  return &data[i];
+  for(; data < limit && *data != ' ' && *data != '\t'; data++);
+  *path_len = data - *path;
+  return data;
 }
 
 
 static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
-  uint32_t limit = MIN(data_end - data, *phrase_len);
+  char* limit = MIN(data_end, data + *phrase_len);
   *phrase = data;
-  uint32_t i = 0;
-  for(; i < limit && data[i] != '\r' && data[i] != '\n'; i++);
-  *phrase_len = &data[i] - data;
-  return &data[i];
+  for(; data < limit && *data != '\r' && *data != '\n'; data++);
+  *phrase_len = data - *phrase;
+  return data;
 }
 
 static inline char* _mh_parse_status_code(char* data, char* data_end, uint16_t* status) {
