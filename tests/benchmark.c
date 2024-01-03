@@ -23,7 +23,7 @@
 #endif
 #endif
 
-#define REPETITIONS 1000000
+#define REPETITIONS 100000
 #define MAX_BUFFER_LEN 1096
 
 char* requests[] = { \

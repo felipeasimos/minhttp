@@ -49,7 +49,7 @@ static const char *token_char_map = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 static inline char* _mh_parse_path(char* data, char* data_end, char** string, uint32_t* string_len) {
   char* limit = *string_len ? MIN(data_end, data + *string_len) : data_end;
   *string = data;
-  for(; data < limit && *data != ' ' && *data != '\t'; data++);
+  for(; likely(data < limit && *data != ' ' && *data != '\t'); data++);
   *string_len = data - *string;
   return data;
 }
@@ -57,8 +57,8 @@ static inline char* _mh_parse_path(char* data, char* data_end, char** string, ui
 static inline char* _mh_parse_method(char* data, char* data_end, char** method, uint8_t* method_len) {
   char* limit = *method_len ? MIN(data_end, data + *method_len) : data_end;
   *method = data;
-  for(; data < limit && *data != ' ' && *data != '\t'; data++) {
-    if(!token_char_map[*data]) return NULL;
+  for(; likely(data < limit && *data != ' ' && *data != '\t'); data++) {
+    if(unlikely(!token_char_map[*data])) return NULL;
   }
   *method_len = data - *method;
   return data;
@@ -67,7 +67,7 @@ static inline char* _mh_parse_method(char* data, char* data_end, char** method, 
 static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
   char* limit = *phrase_len ? MIN(data_end, data + *phrase_len) : data_end;
   *phrase = data;
-  for(; data < limit && *data != '\r' && *data != '\n'; data++);
+  for(; likely(data < limit && *data != '\r' && *data != '\n'); data++);
   *phrase_len = data - *phrase;
   return data;
 }
@@ -138,7 +138,7 @@ static inline char* _mh_parse_header_key(char* data, char* data_end, char** toke
   *token_begin = NULL;
   *token_len = 0;
   if(unlikely(*data == ':')) return NULL;
-  for(; data < data_end && *data != ':'; data++) {
+  for(; likely(data < data_end && *data != ':'); data++) {
     if(unlikely(*data == ' ' || *data == '\t')) return NULL;
     if(unlikely(!*token_begin)) {
         *token_begin = data;
@@ -151,7 +151,7 @@ static inline char* _mh_parse_header_key(char* data, char* data_end, char** toke
 static inline char* _mh_parse_header_value(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
   *token_begin = NULL;
   *token_len = 0;
-  for(; data < data_end && *data != '\n'; data++) {
+  for(; likely(data < data_end && *data != '\n'); data++) {
     if(unlikely(!*token_begin)) {
       if(*data != ' ' && *data != '\t') {
         *token_begin = data;
@@ -159,7 +159,7 @@ static inline char* _mh_parse_header_value(char* data, char* data_end, char** to
     }
   }
   *token_len = data - *token_begin;
-  if(data == data_end) return NULL;
+  if(unlikely(data == data_end)) return NULL;
   // deal with carriage return
   if(likely(*token_len && (*token_begin)[(*token_len) - 1] == '\r')) (*token_len)--;
   // deal with whitespace at the end of the line
