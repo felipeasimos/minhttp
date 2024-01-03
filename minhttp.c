@@ -45,7 +45,6 @@ static const char *token_char_map = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
                                     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
-#include <stdio.h>
 static inline char* _mh_parse_path(char* data, char* data_end, char** string, uint32_t* string_len) {
   char* limit = *string_len ? MIN(data_end, data + *string_len) : data_end;
   *string = data;
