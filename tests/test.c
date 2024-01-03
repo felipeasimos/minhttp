@@ -5,7 +5,8 @@
 #define MAX_BUFFER_LEN 1096
 
 mh_version version;
-mh_method method;
+char* method;
+uint8_t method_len;
 char* path = NULL;
 uint32_t path_len = 1096;
 char* phrase = NULL;
@@ -49,50 +50,50 @@ char* response_garbage_3_example = "HTTP/1.1 200X OK\r\n\r\n";
 char* response_multiple_whitespace_example = "HTTP/1.1   200   OK\r\n\r\n";
 
 ctdd_test(parse_request_first_line_simple_test) {
-  char* data = mh_parse_request_first_line(simple_example, simple_example + strlen(simple_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(simple_example, simple_example + strlen(simple_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == &simple_example[16], "return addr is wrong");
-  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strncmp(method, "GET", method_len) == 0, "method is wrong");
   ctdd_assert(strncmp(path, "/", path_len) == 0, "path is wrong");
   ctdd_assert(version == HTTP_1, "version is wrong");
 }
 
 ctdd_test(parse_request_first_line_test_headers_test) {
-  char* data = mh_parse_request_first_line(test_headers_example, test_headers_example + strlen(test_headers_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(test_headers_example, test_headers_example + strlen(test_headers_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == &test_headers_example[20], "return addr is wrong");
-  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strncmp(method, "GET", method_len) == 0, "method is wrong");
   ctdd_assert(strncmp(path, "/hoge", path_len) == 0, "path is wrong");
   ctdd_assert(version == HTTP_1_1, "version is wrong");
 }
 
 ctdd_test(parse_request_first_line_nul_in_method_test) {
-  char* data = mh_parse_request_first_line(nul_in_method_example, nul_in_method_example + strlen(nul_in_method_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(nul_in_method_example, nul_in_method_example + strlen(nul_in_method_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data == NULL, "return addr is wrong");
 }
 
 ctdd_test(parse_request_first_line_tab_in_method_test) {
-  char* data = mh_parse_request_first_line(tab_in_method_example, tab_in_method_example + strlen(tab_in_method_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(tab_in_method_example, tab_in_method_example + strlen(tab_in_method_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data == NULL, "return addr is wrong");
 }
 
 ctdd_test(parse_request_first_line_invalid_method_test) {
-  char* data = mh_parse_request_first_line(invalid_method_example, invalid_method_example + strlen(invalid_method_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(invalid_method_example, invalid_method_example + strlen(invalid_method_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data == NULL, "return addr is wrong");
 }
 
 ctdd_test(parse_request_first_line_multiple_whitespace_test) {
-  char* data = mh_parse_request_first_line(multiple_whitespace_example, multiple_whitespace_example + strlen(multiple_whitespace_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(multiple_whitespace_example, multiple_whitespace_example + strlen(multiple_whitespace_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data == multiple_whitespace_example + 20, "data is wrong");
-  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strncmp(method, "GET", method_len) == 0, "method is wrong");
   ctdd_assert(strncmp(path, "/", path_len) == 0, "path is wrong");
   ctdd_assert(version == HTTP_1, "version is wrong");
 }
 
 ctdd_test(parse_request_first_line_bench_test) {
-  char* data = mh_parse_request_first_line(bench_example, bench_example + strlen(bench_example), &method, &path, &path_len, &version);
+  char* data = mh_parse_request_first_line(bench_example, bench_example + strlen(bench_example), &method, &method_len, &path, &path_len, &version);
   ctdd_assert(data == bench_example + 75, "data is wrong");
-  ctdd_assert(method == GET, "method is wrong");
+  ctdd_assert(strncmp(method, "GET", method_len) == 0, "method is wrong");
   ctdd_assert(strncmp(path, "/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg", path_len) == 0, "path is wrong");
   ctdd_assert(version == HTTP_1_1, "version is wrong");
 }
@@ -330,7 +331,8 @@ ctdd_test_suite(suite_parse_response_first_line) {
 
 void setup() {
   version = 0;
-  method = 0;
+  method = NULL;
+  method_len = 0;
   status = 0;
   path = NULL;
   path_len = MAX_BUFFER_LEN - 1;

@@ -36,82 +36,36 @@
   }\
 } while(0);
 
-static inline char* _mh_parse_method(char* data, uint32_t data_len, mh_method* method) {
-  if(unlikely(data_len < 3)) return NULL;
-  switch(*data) {
-    // GET
-    case 'G': {
-      if(unlikely(*(data+1) != 'E' || *(data+2) != 'T')) return NULL;
-      *method = GET;
-      return data + 3;
-    }
-    // PUT
-    // POST
-    // PATCH
-    case 'P': {
-      switch(*(data+1)) {
-        case 'U': {
-          if(unlikely(*(data+2) != 'T')) return NULL;
-          *method = PUT;
-          return data + 3;
-        }
-        case 'O': {
-          if(unlikely(data_len == 3 || *(data+2) != 'S' || *(data+3) != 'T')) return NULL;
-          *method = POST;
-          return data + 4;
-        }
-        case 'A': {
-          if(unlikely(data_len == 4 || *(data+2) != 'T' || *(data+3) != 'C' || *(data+4) != 'H')) return NULL;
-          * method = PATCH;
-          return data + 5;
-        }
-      } 
-    }
-    // OPTIONS
-    case 'O': {
-      if(unlikely(data_len < 7 || *(data+1) != 'P' || *(data+2) != 'T' || *(data+3) != 'I' || *(data+4) != 'O' || *(data+5) != 'N' || *(data+6) != 'S')) return NULL;
-      *method = OPTIONS;
-      return data + 7;
-    }
-    // HEAD
-    case 'H': {
-      if(unlikely(data_len < 4 || *(data+1) != 'E' || *(data+2) != 'A' || *(data+3) != 'D')) return NULL;
-      *method = HEAD;
-      return data + 4;
-    }
-    // DELETE
-    case 'D': {
-      if(unlikely(data_len < 6 || *(data+1) != 'E' || *(data+2) != 'L' || *(data+3) != 'E' || *(data+4) != 'T' || *(data+5) != 'E')) return NULL;
-      *method = DELETE;
-      return data + 6;
-    }
-    // TRACE
-    case 'T': {
-      if(unlikely(data_len < 5 || *(data+1) != 'R' || *(data+2) != 'A' || *(data+3) != 'C' || *(data+4) != 'E')) return NULL;
-      *method = TRACE;
-      return data + 6;
-    }
-    // CONNECT
-    case 'C': {
-      if(unlikely(data_len < 7 || *(data+1) != 'O'|| *(data+2) != 'N'|| *(data+3) != 'N'|| *(data+4) != 'E'|| *(data+5) != 'C'|| *(data+6) != 'T')) return NULL;
-      *method = CONNECT;
-      return data + 7;
-    }
-  }
-  return NULL;
-}
+static const char *token_char_map = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+                                    "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\0\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0\0"
+                                    "\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\1\1"
+                                    "\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\1\0\1\0"
+                                    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+                                    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+                                    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+                                    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
-static inline char* _mh_parse_path(char* data, char* data_end, char** path, uint32_t* path_len) {
-  char* limit = MIN(data_end, data + *path_len);
-  *path = data;
+#include <stdio.h>
+static inline char* _mh_parse_path(char* data, char* data_end, char** string, uint32_t* string_len) {
+  char* limit = *string_len ? MIN(data_end, data + *string_len) : data_end;
+  *string = data;
   for(; data < limit && *data != ' ' && *data != '\t'; data++);
-  *path_len = data - *path;
+  *string_len = data - *string;
   return data;
 }
 
+static inline char* _mh_parse_method(char* data, char* data_end, char** method, uint8_t* method_len) {
+  char* limit = *method_len ? MIN(data_end, data + *method_len) : data_end;
+  *method = data;
+  for(; data < limit && *data != ' ' && *data != '\t'; data++) {
+    if(!token_char_map[*data]) return NULL;
+  }
+  *method_len = data - *method;
+  return data;
+}
 
 static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
-  char* limit = MIN(data_end, data + *phrase_len);
+  char* limit = *phrase_len ? MIN(data_end, data + *phrase_len) : data_end;
   *phrase = data;
   for(; data < limit && *data != '\r' && *data != '\n'; data++);
   *phrase_len = data - *phrase;
@@ -152,9 +106,9 @@ static inline char* _mh_parse_version(char* data, char* data_end, mh_version* ve
   return data + 1;
 }
 
-char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char** path, uint32_t* path_len, mh_version* version) {
+char* mh_parse_request_first_line(char* data, char* data_end, char** method, uint8_t* method_len, char** path, uint32_t* path_len, mh_version* version) {
   if(unlikely(data_end < data)) return NULL;
-  data = _mh_parse_method(data, data_end - data, method);
+  data = _mh_parse_method(data, data_end, method, method_len);
   if(unlikely(!data)) return NULL;
   UNTIL_NOT(' ');
   data = _mh_parse_path(data, data_end, path, path_len);
