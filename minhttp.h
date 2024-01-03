@@ -37,7 +37,7 @@ return:
   - NULL -> error
   - address -> address after newline
 */
-char* mh_parse_request_first_line(char* data, char* data_end, mh_method* method, char* path, uint32_t* path_len, mh_version* version);
+char* mh_parse_request_first_line(char* data, char* data_end, char** method, uint8_t* method_len, char** path, uint32_t* path_len, mh_version* version);
 
 /* 
 char* data - pointer to first char of data to parse
@@ -50,7 +50,7 @@ return:
   - NULL -> error
   - address -> address after newline
 */
-char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, uint16_t* status, char* phrase, uint32_t* phrase_len);
+char* mh_parse_response_first_line(char* data, char* data_end, mh_version* version, uint16_t* status, char** phrase, uint32_t* phrase_len);
 
 /*
 char* data - pointer to first char of data to parse
