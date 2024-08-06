@@ -9,7 +9,7 @@
 Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses.
 
 * no memory allocations
-* no dependencies
+* no dependencies (only header used is `stdint.h`)
 
 Inspired by picohttpparser. This project aims to have better performance and smaller size while having a builder feature.
 
@@ -40,7 +40,6 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
     - [x] pass all tests for header parser from picohttpparser
     - [x] pass all tests for response first line parser from picohttpparser
     - [ ] parse only requested headers (`mh_parse_headers_set`)
-        - [ ] get max key len automatically
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder

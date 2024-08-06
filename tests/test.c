@@ -330,6 +330,7 @@ ctdd_test_suite(suite_parse_response_first_line) {
 }
 
 ctdd_test(parse_headers_simple_test_set) {
+  num_headers = 0;
   char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, &num_headers);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
