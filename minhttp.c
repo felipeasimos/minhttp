@@ -209,13 +209,17 @@ uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16_t len2) {
   }
   return 1;
 }
-
-char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
+char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t num_headers) {
+  if(!num_headers) {
+    EXPECT_NEWLINE();
+    EXPECT_NEWLINE();
+    return data;
+  }
   uint32_t header_counter = 0;
-  uint32_t num_headers_to_parse = *num_headers;
+  uint32_t num_headers_to_parse = num_headers;
   uint32_t headers_to_parse[num_headers_to_parse];
   for(uint32_t i = 0; i < num_headers_to_parse; i++) headers_to_parse[i] = i;
-  for(; header_counter < *num_headers; header_counter++) {
+  for(; header_counter < num_headers; header_counter++) {
     CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
       data += 1 + (*data != '\n');
@@ -245,6 +249,5 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
     data++;
   }
 done:
-  *num_headers = header_counter;
   return data;
 }

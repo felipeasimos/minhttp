@@ -331,15 +331,35 @@ ctdd_test_suite(suite_parse_response_first_line) {
 
 ctdd_test(parse_headers_simple_test_set) {
   num_headers = 0;
-  char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, &num_headers);
+  char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, num_headers);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
-  ctdd_assert(num_headers == 0, "num_headers is wrong");
+}
+
+ctdd_test(parse_headers_simple_test_set_with_num_headers_non_zero) {
+  num_headers = 99;
+  char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, num_headers);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
+}
+
+ctdd_test(parse_headers_partial_test_set) {
+  num_headers = 0;
+  char* data = mh_parse_headers_set(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, num_headers);
+  ctdd_assert(data == NULL, "data is NULL");
+}
+
+ctdd_test(parse_headers_partial_test_set_with_num_headers_non_zero) {
+  num_headers = 99;
+  char* data = mh_parse_headers_set(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, num_headers);
+  ctdd_assert(data == NULL, "data is NULL");
 }
 
 ctdd_test_suite(suite_parse_headers_set) {
   ctdd_run_test(parse_headers_simple_test_set);
-  // ctdd_run_test(parse_headers_partial_test);
+  ctdd_run_test(parse_headers_simple_test_set_with_num_headers_non_zero);
+  ctdd_run_test(parse_headers_partial_test_set);
+  ctdd_run_test(parse_headers_partial_test_set_with_num_headers_non_zero);
   // ctdd_run_test(parse_headers_test_headers_example_test);
   // ctdd_run_test(parse_headers_multibyte_example_test);
   // ctdd_run_test(parse_headers_multiline_example_test);

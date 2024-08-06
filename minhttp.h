@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 
 typedef enum MH_HTTP_METHOD {
   GET = 1,
@@ -66,4 +67,4 @@ char* data_end - pointer to final char of data + 1 to parse
 mh_header* headers - pointer to array of mh_header structs to be written to. 'key_begin' and 'key_len' must already be filled
 uint32_t* num_headers - number of headers in array. Will return the number of mh_headers written to
  */
-char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t* num_headers);
+char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t num_headers);
