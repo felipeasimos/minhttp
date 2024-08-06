@@ -1,9 +1,9 @@
 ## MinHTTP
 
-[![Linux](https://github.com/asimos-bot/minhttp/actions/workflows/test-linux.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/test-linux.yml)
-[![MacOS](https://github.com/asimos-bot/minhttp/actions/workflows/test-macos.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/test-macos.yml)
-[![Windows (MSVC)](https://github.com/asimos-bot/minhttp/actions/workflows/test-windows.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/test-windows.yml)
-[![No Dependencies](https://github.com/asimos-bot/minhttp/actions/workflows/no-includes.yml/badge.svg)](https://github.com/asimos-bot/minhttp/actions/workflows/no-includes.yml)
+[![Linux](https://github.com/felipeasimos/minhttp/actions/workflows/test-linux.yml/badge.svg)](https://github.com/felipeasimos/minhttp/actions/workflows/test-linux.yml)
+[![MacOS](https://github.com/felipeasimos/minhttp/actions/workflows/test-macos.yml/badge.svg)](https://github.com/felipeasimos/minhttp/actions/workflows/test-macos.yml)
+[![Windows (MSVC)](https://github.com/felipeasimos/minhttp/actions/workflows/test-windows.yml/badge.svg)](https://github.com/felipeasimos/minhttp/actions/workflows/test-windows.yml)
+[![No Dependencies](https://github.com/felipeasimos/minhttp/actions/workflows/no-includes.yml/badge.svg)](https://github.com/felipeasimos/minhttp/actions/workflows/no-includes.yml)
 ![Lines of Code Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/felipeasimos/1062ce0f390bb2b6458d29f225cc08b5/raw/minhttp__heads_feat-coverage_coverage.json)
 
 Minimal HTTP 1.0 and 1.1 parser and builder for requests and responses.
