@@ -217,8 +217,6 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
   }
   uint32_t header_counter = 0;
   uint32_t num_headers_to_parse = num_headers;
-  uint32_t headers_to_parse[num_headers_to_parse];
-  for(uint32_t i = 0; i < num_headers_to_parse; i++) headers_to_parse[i] = i;
   for(; header_counter < num_headers; header_counter++) {
     CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
@@ -226,20 +224,18 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
       goto done;
     }
     CHECK_EOF();
+    // find key in payload
     char* header_key_begin = NULL;
     uint16_t header_key_len = 0;
     if(unlikely((data = _mh_parse_header_key(data, data_end, num_headers_to_parse ? &header_key_begin : NULL, num_headers_to_parse ? &header_key_len : NULL)) == NULL)) return NULL;
     // see if it matches any of the given keys
     char** matched_header_value_begin = NULL;
     uint16_t* matched_header_value_len = 0;
-    for(uint32_t i = 0; i < num_headers_to_parse; i++) {
-      mh_header* header_to_parse = &headers[headers_to_parse[i]];
+    for(uint32_t i = 0; i < num_headers; i++) {
+      mh_header* header_to_parse = &headers[i];
       if(str_is_equal(header_key_begin, header_key_len, header_to_parse->header_key_begin, header_to_parse->header_key_len)) {
         matched_header_value_begin = &header_to_parse->header_value_begin;
         matched_header_value_len = &header_to_parse->header_value_len;
-        for(uint32_t j = i + 1; j < num_headers_to_parse; j++) {
-          headers_to_parse[j-1] = headers_to_parse[j];
-        }
         num_headers_to_parse--;
         break;
       }
