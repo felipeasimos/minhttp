@@ -329,6 +329,26 @@ ctdd_test_suite(suite_parse_response_first_line) {
   ctdd_run_test(parse_response_first_line_multiple_whitespace_test);
 }
 
+ctdd_test(parse_headers_simple_test_set) {
+  char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, &num_headers);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
+  ctdd_assert(num_headers == 0, "num_headers is wrong");
+}
+
+ctdd_test_suite(suite_parse_headers_set) {
+  ctdd_run_test(parse_headers_simple_test_set);
+  // ctdd_run_test(parse_headers_partial_test);
+  // ctdd_run_test(parse_headers_test_headers_example_test);
+  // ctdd_run_test(parse_headers_multibyte_example_test);
+  // ctdd_run_test(parse_headers_multiline_example_test);
+  // ctdd_run_test(parse_headers_multiline_success_example_test);
+  // ctdd_run_test(parse_headers_trailing_colon_example_test);
+  // ctdd_run_test(parse_headers_trailing_value_example_test);
+  // ctdd_run_test(parse_headers_empty_name_example_test);
+  // ctdd_run_test(parse_headers_bench_test);
+}
+
 void setup() {
   version = 0;
   method = NULL;
@@ -356,4 +376,5 @@ int main(int argc, char** argv) {
   ctdd_run_suite(suite_parse_request_first_line);
   ctdd_run_suite(suite_parse_headers);
   ctdd_run_suite(suite_parse_response_first_line);
+  ctdd_run_suite(suite_parse_headers_set);
 }

@@ -136,6 +136,10 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
 static inline char* _mh_parse_header_key(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
   *token_begin = NULL;
   *token_len = 0;
+  if(unlikely(!token_begin || !token_len)) {
+    for(; likely(data < data_end && *data != ':'); data++);
+    return data == data_end ? NULL : data;
+  }
   if(unlikely(*data == ':')) return NULL;
   for(; likely(data < data_end && *data != ':'); data++) {
     if(unlikely(*data == ' ' || *data == '\t')) return NULL;
@@ -148,6 +152,10 @@ static inline char* _mh_parse_header_key(char* data, char* data_end, char** toke
 }
 
 static inline char* _mh_parse_header_value(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
+  if(unlikely(!token_begin || !token_len)) {
+    for(; likely(data < data_end && *data != '\n'); data++);
+    return data;
+  }
   *token_begin = NULL;
   *token_len = 0;
   for(; likely(data < data_end && *data != '\n'); data++) {
@@ -190,5 +198,53 @@ done:
 char* mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   data = _mh_parse_headers(data, data_end, headers, num_headers);
   if(unlikely(!data)) *num_headers = 0;
+  return data;
+}
+
+uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16_t len2) {
+  if(likely(len2 != len1)) return 0;
+
+  for(uint16_t i = 0; i < len1; i++) {
+    if(likely(str1[i] != str2[i])) return 0;
+  }
+  return 1;
+}
+
+char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
+  uint32_t header_counter = 0;
+  uint32_t num_headers_to_parse = *num_headers;
+  uint32_t headers_to_parse[num_headers_to_parse];
+  for(uint32_t i = 0; i < num_headers_to_parse; i++) headers_to_parse[i] = i;
+  for(; header_counter < *num_headers; header_counter++) {
+    CHECK_EOF();
+    if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
+      data += 1 + (*data != '\n');
+      goto done;
+    }
+    CHECK_EOF();
+    char* header_key_begin = NULL;
+    uint16_t header_key_len = 0;
+    if(unlikely((data = _mh_parse_header_key(data, data_end, num_headers_to_parse ? &header_key_begin : NULL, num_headers_to_parse ? &header_key_len : NULL)) == NULL)) return NULL;
+    // see if it matches any of the given keys
+    char** matched_header_value_begin = NULL;
+    uint16_t* matched_header_value_len = 0;
+    for(uint32_t i = 0; i < num_headers_to_parse; i++) {
+      mh_header* header_to_parse = &headers[headers_to_parse[i]];
+      if(str_is_equal(header_key_begin, header_key_len, header_to_parse->header_key_begin, header_to_parse->header_key_len)) {
+        matched_header_value_begin = &header_to_parse->header_value_begin;
+        matched_header_value_len = &header_to_parse->header_value_len;
+        for(uint32_t j = i + 1; j < num_headers_to_parse; j++) {
+          headers_to_parse[j-1] = headers_to_parse[j];
+        }
+        num_headers_to_parse--;
+        break;
+      }
+    }
+    data++;
+    if(unlikely((data = _mh_parse_header_value(data, data_end, matched_header_value_begin, matched_header_value_len)) == NULL)) return NULL;
+    data++;
+  }
+done:
+  *num_headers = header_counter;
   return data;
 }
