@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdio.h>
 
 typedef enum MH_HTTP_METHOD {
   GET = 1,
