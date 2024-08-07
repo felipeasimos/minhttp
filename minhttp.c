@@ -190,6 +190,7 @@ static inline char* _mh_parse_headers(char* data, char* data_end, mh_header* hea
     if(unlikely((data = _mh_parse_header_value(data, data_end, &headers[header_counter].header_value_begin, &headers[header_counter].header_value_len)) == NULL)) return NULL;
     data++;
   }
+  EXPECT_NEWLINE();
 done:
   *num_headers = header_counter;
   return data;
@@ -201,7 +202,7 @@ char* mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t*
   return data;
 }
 
-uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16_t len2) {
+static inline uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16_t len2) {
   if(likely(len2 != len1)) return 0;
 
   for(uint16_t i = 0; i < len1; i++) {
@@ -210,13 +211,11 @@ uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16_t len2) {
   return 1;
 }
 char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t num_headers) {
-  if(!num_headers) {
-    EXPECT_NEWLINE();
-    EXPECT_NEWLINE();
-    return data;
-  }
   uint32_t header_counter = 0;
   uint32_t num_headers_to_parse = num_headers;
+  char* header_key_begin = NULL;
+  uint16_t header_key_len = 0;
+  fprintf(stderr, "START: data: %p, data_end: %p\n", data, data_end);
   for(; header_counter < num_headers; header_counter++) {
     CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
@@ -225,8 +224,6 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
     }
     CHECK_EOF();
     // find key in payload
-    char* header_key_begin = NULL;
-    uint16_t header_key_len = 0;
     if(unlikely((data = _mh_parse_header_key(data, data_end, num_headers_to_parse ? &header_key_begin : NULL, num_headers_to_parse ? &header_key_len : NULL)) == NULL)) return NULL;
     // see if it matches any of the given keys
     char** matched_header_value_begin = NULL;
@@ -234,6 +231,7 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
     for(uint32_t i = 0; i < num_headers; i++) {
       mh_header* header_to_parse = &headers[i];
       if(str_is_equal(header_key_begin, header_key_len, header_to_parse->header_key_begin, header_to_parse->header_key_len)) {
+        fprintf(stderr, "header being parsed: '%s'\n", header_to_parse->header_key_begin);
         matched_header_value_begin = &header_to_parse->header_value_begin;
         matched_header_value_len = &header_to_parse->header_value_len;
         num_headers_to_parse--;
@@ -243,7 +241,10 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
     data++;
     if(unlikely((data = _mh_parse_header_value(data, data_end, matched_header_value_begin, matched_header_value_len)) == NULL)) return NULL;
     data++;
+    fprintf(stderr, "INNER: data: %p, data_end: %p\n", data, data_end);
   }
+  EXPECT_NEWLINE();
 done:
+  fprintf(stderr, "END: data: %p, data_end: %p\n", data, data_end);
   return data;
 }

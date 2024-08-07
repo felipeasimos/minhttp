@@ -115,9 +115,17 @@ ctdd_test(parse_headers_simple_test) {
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
+ctdd_test(parse_headers_simple_with_zero_test) {
+  num_headers = 0;
+  char* data = mh_parse_headers(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, &num_headers);
+  ctdd_assert(data, "data is NULL");
+  ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
+  ctdd_assert(num_headers == 0, "num_headers is wrong");
+}
+
 ctdd_test(parse_headers_partial_test) {
   char* data = mh_parse_headers(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, &num_headers);
-  ctdd_assert(data == NULL, "data is NULL");
+  ctdd_assert(data == NULL, "data is not NULL");
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
@@ -157,7 +165,7 @@ ctdd_test(parse_headers_multibyte_example_test) {
 
 ctdd_test(parse_headers_multiline_example_test) {
   char* data = mh_parse_headers(multiline_example + 16, multiline_example + strlen(multiline_example), headers, &num_headers);
-  ctdd_assert(data == NULL, "data is NULL");
+  ctdd_assert(data == NULL, "data is not NULL");
   ctdd_assert(num_headers == 0, "num_headers is wrong");
 }
 
@@ -222,6 +230,7 @@ ctdd_test(parse_headers_bench_test) {
 
 ctdd_test_suite(suite_parse_headers) {
   ctdd_run_test(parse_headers_simple_test);
+  ctdd_run_test(parse_headers_simple_with_zero_test);
   ctdd_run_test(parse_headers_partial_test);
   ctdd_run_test(parse_headers_test_headers_example_test);
   ctdd_run_test(parse_headers_multibyte_example_test);
@@ -265,7 +274,7 @@ ctdd_test(parse_response_first_line_error_test) {
 
 ctdd_test(parse_response_first_line_incomplete_version_test) {
   char* data = mh_parse_response_first_line(response_incomplete_version_example, response_incomplete_version_example + strlen(response_incomplete_version_example), &version, &status, &phrase, &phrase_len);
-  ctdd_assert(data == NULL, "data is NULL");
+  ctdd_assert(data == NULL, "data is not NULL");
 }
 
 ctdd_test(parse_response_first_line_wrong_version_test) {
@@ -329,38 +338,106 @@ ctdd_test_suite(suite_parse_response_first_line) {
   ctdd_run_test(parse_response_first_line_multiple_whitespace_test);
 }
 
-ctdd_test(parse_headers_simple_test_set) {
+ctdd_test(parse_headers_simple_set_test) {
   num_headers = 0;
   char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, num_headers);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
 }
 
-ctdd_test(parse_headers_simple_test_set_with_num_headers_non_zero) {
-  num_headers = 99;
+ctdd_test(parse_headers_simple_set_test_with_num_headers_non_zero) {
+  char* host_header = "Host";
+  char* cookie_header = "Cookie";
+  headers[0].header_key_begin = host_header;
+  headers[0].header_key_len = strlen(host_header);
+  headers[1].header_key_begin = cookie_header;
+  headers[1].header_key_len = strlen(cookie_header);
+  num_headers = 2;
   char* data = mh_parse_headers_set(simple_example + strlen(simple_example) - 2, simple_example + strlen(simple_example), headers, num_headers);
   ctdd_assert(data, "data is NULL");
   ctdd_assert(data == simple_example + strlen(simple_example), "data is wrong");
 }
 
-ctdd_test(parse_headers_partial_test_set) {
+ctdd_test(parse_headers_partial_set_test) {
   num_headers = 0;
   char* data = mh_parse_headers_set(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, num_headers);
-  ctdd_assert(data == NULL, "data is NULL");
+  ctdd_assert(data == NULL, "data is not NULL");
 }
 
-ctdd_test(parse_headers_partial_test_set_with_num_headers_non_zero) {
+ctdd_test(parse_headers_partial_set_test_with_num_headers_non_zero) {
   num_headers = 99;
   char* data = mh_parse_headers_set(partial_example + strlen(partial_example) - 1, partial_example + strlen(partial_example), headers, num_headers);
-  ctdd_assert(data == NULL, "data is NULL");
+  ctdd_assert(data == NULL, "data is not NULL");
 }
+
+ctdd_test(parse_headers_test_headers_example_set_test) {
+  char* host_header = "Host";
+  char* cookie_header = "Cookie";
+  headers[0].header_key_begin = host_header;
+  headers[0].header_key_len = strlen(host_header);
+  headers[1].header_key_begin = cookie_header;
+  headers[1].header_key_len = strlen(cookie_header);
+  num_headers = 2;
+
+  char* data = mh_parse_headers_set(test_headers_example + 20, test_headers_example + strlen(test_headers_example), headers, num_headers);
+  ctdd_assert(data, "data is NULL");
+  printf("data: %p, should be: %p, diff: %lu\n", data, test_headers_example + strlen(test_headers_example), test_headers_example + strlen(test_headers_example) - data);
+
+  ctdd_assert(data == test_headers_example + strlen(test_headers_example), "data is wrong");
+
+  ctdd_assert(headers[0].header_key_len == strlen("Host"), "header[0] key len is wrong");
+  ctdd_assert(strncmp(headers[0].header_key_begin, "Host", headers[0].header_key_len) == 0, "header[0] key is wrong");
+  ctdd_assert(headers[0].header_value_len == strlen("example.com"), "header[0] value len is wrong");
+  ctdd_assert(strncmp(headers[0].header_value_begin, "example.com", headers[0].header_value_len) == 0, "header[0] value is wrong");
+
+  ctdd_assert(headers[1].header_key_len == strlen("Cookie"), "header[1] key len is wrong");
+  ctdd_assert(strncmp(headers[1].header_key_begin, "Cookie", headers[1].header_key_len) == 0, "header[1] key is wrong");
+  ctdd_assert(headers[1].header_value_len == 0, "header[1] value len is wrong");
+  ctdd_assert(strncmp(headers[1].header_value_begin, "", headers[1].header_value_len) == 0, "header[1] value is wrong");
+}
+
+ctdd_test(parse_headers_test_headers_example_set_wrong_header_test) {
+  char* host_header = "Host";
+  char* cookie_header = "Cookie";
+  char* velociraptor_header = "Velociraptor";
+  headers[0].header_key_begin = host_header;
+  headers[0].header_key_len = strlen(host_header);
+  headers[1].header_key_begin = cookie_header;
+  headers[1].header_key_len = strlen(cookie_header);
+  headers[2].header_key_begin = velociraptor_header;
+  headers[2].header_key_len = strlen(velociraptor_header);
+  num_headers = 3;
+
+  char* data = mh_parse_headers_set(test_headers_example + 20, test_headers_example + strlen(test_headers_example), headers, num_headers);
+  ctdd_assert(data, "data is NULL");
+  printf("data: %p, should be: %p, diff: %lu\n", data, test_headers_example + strlen(test_headers_example), test_headers_example + strlen(test_headers_example) - data);
+
+  ctdd_assert(data == test_headers_example + strlen(test_headers_example), "data is wrong");
+
+  ctdd_assert(headers[0].header_key_len == strlen("Host"), "header[0] key len is wrong");
+  ctdd_assert(strncmp(headers[0].header_key_begin, "Host", headers[0].header_key_len) == 0, "header[0] key is wrong");
+  ctdd_assert(headers[0].header_value_len == strlen("example.com"), "header[0] value len is wrong");
+  ctdd_assert(strncmp(headers[0].header_value_begin, "example.com", headers[0].header_value_len) == 0, "header[0] value is wrong");
+
+  ctdd_assert(headers[1].header_key_len == strlen("Cookie"), "header[1] key len is wrong");
+  ctdd_assert(strncmp(headers[1].header_key_begin, "Cookie", headers[1].header_key_len) == 0, "header[1] key is wrong");
+  ctdd_assert(headers[1].header_value_len == 0, "header[1] value len is wrong");
+  ctdd_assert(strncmp(headers[1].header_value_begin, "", headers[1].header_value_len) == 0, "header[1] value is wrong");
+
+  ctdd_assert(headers[2].header_key_len == strlen("Velociraptor"), "header[2] key len is wrong");
+  ctdd_assert(strncmp(headers[2].header_key_begin, "Velociraptor", headers[2].header_key_len) == 0, "header[2] key is wrong");
+  ctdd_assert(headers[2].header_value_len == 0, "header[2] value len is wrong");
+  ctdd_assert(headers[2].header_value_begin == NULL, "header[2] value is wrong");
+}
+
 
 ctdd_test_suite(suite_parse_headers_set) {
-  ctdd_run_test(parse_headers_simple_test_set);
-  ctdd_run_test(parse_headers_simple_test_set_with_num_headers_non_zero);
-  ctdd_run_test(parse_headers_partial_test_set);
-  ctdd_run_test(parse_headers_partial_test_set_with_num_headers_non_zero);
-  // ctdd_run_test(parse_headers_test_headers_example_test);
+  ctdd_run_test(parse_headers_simple_set_test);
+  ctdd_run_test(parse_headers_simple_set_test_with_num_headers_non_zero);
+  ctdd_run_test(parse_headers_partial_set_test);
+  ctdd_run_test(parse_headers_partial_set_test_with_num_headers_non_zero);
+  ctdd_run_test(parse_headers_test_headers_example_set_test);
+  ctdd_run_test(parse_headers_test_headers_example_set_wrong_header_test);
   // ctdd_run_test(parse_headers_multibyte_example_test);
   // ctdd_run_test(parse_headers_multiline_example_test);
   // ctdd_run_test(parse_headers_multiline_success_example_test);
