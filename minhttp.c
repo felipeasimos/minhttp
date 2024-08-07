@@ -134,12 +134,12 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
 }
 
 static inline char* _mh_parse_header_key(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
-  *token_begin = NULL;
-  *token_len = 0;
   if(unlikely(!token_begin || !token_len)) {
     for(; likely(data < data_end && *data != ':'); data++);
     return data == data_end ? NULL : data;
   }
+  *token_begin = NULL;
+  *token_len = 0;
   if(unlikely(*data == ':')) return NULL;
   for(; likely(data < data_end && *data != ':'); data++) {
     if(unlikely(*data == ' ' || *data == '\t')) return NULL;
@@ -178,17 +178,24 @@ static inline char* _mh_parse_header_value(char* data, char* data_end, char** to
 
 static inline char* _mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t* num_headers) {
   uint32_t header_counter = 0;
-  for(; header_counter < *num_headers; header_counter++) {
+  while(1) {
     CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
       data += 1 + (*data != '\n');
       goto done;
     }
     CHECK_EOF();
-    if(unlikely((data = _mh_parse_header_key(data, data_end, &headers[header_counter].header_key_begin, &headers[header_counter].header_key_len)) == NULL)) return NULL;
+    char** matched_header_value_begin = NULL;
+    uint16_t* matched_header_value_len = NULL;
+    if(unlikely((data = _mh_parse_header_key(data, data_end, header_counter < *num_headers ? &headers[header_counter].header_key_begin : NULL, header_counter < *num_headers ? &headers[header_counter].header_key_len : NULL)) == NULL)) return NULL;
+    if(header_counter < *num_headers) {
+      matched_header_value_begin = &headers[header_counter].header_value_begin;
+      matched_header_value_len = &headers[header_counter].header_value_len;
+    }
     data++;
-    if(unlikely((data = _mh_parse_header_value(data, data_end, &headers[header_counter].header_value_begin, &headers[header_counter].header_value_len)) == NULL)) return NULL;
+    if(unlikely((data = _mh_parse_header_value(data, data_end, matched_header_value_begin, matched_header_value_len)) == NULL)) return NULL;
     data++;
+    header_counter++;
   }
   EXPECT_NEWLINE();
 done:
@@ -211,22 +218,21 @@ static inline uint8_t str_is_equal(char* str1, uint16_t len1, char* str2, uint16
   return 1;
 }
 char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t num_headers) {
-  uint32_t header_counter = 0;
   uint32_t num_headers_to_parse = num_headers;
   char* header_key_begin = NULL;
   uint16_t header_key_len = 0;
-  for(; header_counter < num_headers; header_counter++) {
+  while(1) {
     CHECK_EOF();
     if(unlikely((*data == '\r' && *(data + 1) == '\n') || *data == '\n')) {
       data += 1 + (*data != '\n');
       goto done;
     }
     CHECK_EOF();
+    char** matched_header_value_begin = NULL;
+    uint16_t* matched_header_value_len = 0;
     // find key in payload
     if(unlikely((data = _mh_parse_header_key(data, data_end, num_headers_to_parse ? &header_key_begin : NULL, num_headers_to_parse ? &header_key_len : NULL)) == NULL)) return NULL;
     // see if it matches any of the given keys
-    char** matched_header_value_begin = NULL;
-    uint16_t* matched_header_value_len = 0;
     for(uint32_t i = 0; i < num_headers; i++) {
       mh_header* header_to_parse = &headers[i];
       if(str_is_equal(header_key_begin, header_key_len, header_to_parse->header_key_begin, header_to_parse->header_key_len)) {
