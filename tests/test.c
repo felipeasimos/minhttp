@@ -1,6 +1,7 @@
 #include "../minhttp.h"
 #include "ctdd.h"
 #include <string.h>
+#include <stdio.h>
 
 #define MAX_BUFFER_LEN 1096
 
@@ -381,7 +382,6 @@ ctdd_test(parse_headers_test_headers_example_set_test) {
 
   char* data = mh_parse_headers_set(test_headers_example + 20, test_headers_example + strlen(test_headers_example), headers, num_headers);
   ctdd_assert(data, "data is NULL");
-  printf("data: %p, should be: %p, diff: %lu\n", data, test_headers_example + strlen(test_headers_example), test_headers_example + strlen(test_headers_example) - data);
 
   ctdd_assert(data == test_headers_example + strlen(test_headers_example), "data is wrong");
 
@@ -410,7 +410,6 @@ ctdd_test(parse_headers_test_headers_example_set_wrong_header_test) {
 
   char* data = mh_parse_headers_set(test_headers_example + 20, test_headers_example + strlen(test_headers_example), headers, num_headers);
   ctdd_assert(data, "data is NULL");
-  printf("data: %p, should be: %p, diff: %lu\n", data, test_headers_example + strlen(test_headers_example), test_headers_example + strlen(test_headers_example) - data);
 
   ctdd_assert(data == test_headers_example + strlen(test_headers_example), "data is wrong");
 
