@@ -134,37 +134,36 @@ char* mh_parse_response_first_line(char* data, char* data_end, mh_version* versi
 }
 
 static inline char* _mh_parse_header_key(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
-  if(unlikely(!token_begin || !token_len)) {
-    for(; likely(data < data_end && *data != ':'); data++);
-    return data == data_end ? NULL : data;
-  }
-  *token_begin = NULL;
-  *token_len = 0;
   if(unlikely(*data == ':')) return NULL;
+  char* token_begin_ptr = NULL;
   for(; likely(data < data_end && *data != ':'); data++) {
     if(unlikely(*data == ' ' || *data == '\t')) return NULL;
-    if(unlikely(!*token_begin)) {
-        *token_begin = data;
+    if(unlikely(!token_begin_ptr)) {
+        token_begin_ptr = data;
     }
   }
+  if(!token_begin || !token_len) {
+    goto done;
+  }
+  *token_begin = token_begin_ptr;
   *token_len = data - *token_begin;
+done:
   return data == data_end ? NULL : data;
 }
 
 static inline char* _mh_parse_header_value(char* data, char* data_end, char** token_begin, uint16_t* token_len) {
-  if(unlikely(!token_begin || !token_len)) {
-    for(; likely(data < data_end && *data != '\n'); data++);
-    return data;
-  }
-  *token_begin = NULL;
-  *token_len = 0;
+  char* token_begin_ptr = NULL;
   for(; likely(data < data_end && *data != '\n'); data++) {
-    if(unlikely(!*token_begin)) {
+    if(unlikely(!token_begin_ptr)) {
       if(*data != ' ' && *data != '\t') {
-        *token_begin = data;
+        token_begin_ptr = data;
       }
     }
   }
+  if(!token_begin || !token_len) {
+    goto done;
+  }
+  *token_begin = token_begin_ptr;
   *token_len = data - *token_begin;
   if(unlikely(data == data_end)) return NULL;
   // deal with carriage return
@@ -173,6 +172,7 @@ static inline char* _mh_parse_header_value(char* data, char* data_end, char** to
   while(likely((*token_len) && ((*token_begin)[(*token_len) - 1] == ' ' || (*token_begin)[(*token_len) - 1] == '\t'))) {
     (*token_len)--;
   }
+done:
   return data;
 }
 
@@ -234,6 +234,7 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
     if(unlikely((data = _mh_parse_header_key(data, data_end, num_headers_to_parse ? &header_key_begin : NULL, num_headers_to_parse ? &header_key_len : NULL)) == NULL)) return NULL;
     // see if it matches any of the given keys
     for(uint32_t i = 0; i < num_headers; i++) {
+      if(headers[i].header_value_begin) continue;
       mh_header* header_to_parse = &headers[i];
       if(str_is_equal(header_key_begin, header_key_len, header_to_parse->header_key_begin, header_to_parse->header_key_len)) {
         matched_header_value_begin = &header_to_parse->header_value_begin;

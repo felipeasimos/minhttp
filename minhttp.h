@@ -63,7 +63,7 @@ char* mh_parse_headers(char* data, char* data_end, mh_header* headers, uint32_t*
 /*
 char* data - pointer to first char of data to parse
 char* data_end - pointer to final char of data + 1 to parse
-mh_header* headers - pointer to array of mh_header structs to be written to. 'key_begin' and 'key_len' must already be filled
+mh_header* headers - pointer to array of mh_header structs to be written to. 'key_begin' and 'key_len' must already be filled. All 'value_begin' should be NULL (will be used to determined if the header was already parsed)
 uint32_t* num_headers - number of headers in array. Will return the number of mh_headers written to
  */
 char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint32_t num_headers);
