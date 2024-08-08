@@ -43,7 +43,6 @@ The tests are based on the ones from [picohttpparser](https://github.com/h2o/pic
 - [ ] builder
     - [ ] header builder
     - [ ] response first line builder
-    - [ ] response builder
     - [ ] request first line builder
 - [ ] benchmarking and optimizations
     - [x] benchmark against other http parsers

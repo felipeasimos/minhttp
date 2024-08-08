@@ -251,3 +251,13 @@ char* mh_parse_headers_set(char* data, char* data_end, mh_header* headers, uint3
 done:
   return data;
 }
+
+void mh_build_request_first_line(char* data, char* data_end, char* method, uint8_t method_len, char* path, uint32_t path_len, mh_version* version);
+
+void mh_build_response_first_line(char* data, char* data_end, mh_version version, uint16_t status, char* path, uint32_t path_len);
+
+void mh_build_header(char* data, char* data_end, char* key, uint32_t key_len, char* value, uint32_t value_len);
+
+void mh_method_from_str(char* str, uint8_t str_len, mh_method* method);
+
+void mh_method_to_str(char* str, uint8_t* str_len, mh_method method);
