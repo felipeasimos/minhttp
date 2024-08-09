@@ -147,7 +147,7 @@ int main() {
   unsigned long minhttp_microsecs = minhttp_total_benchmark();
   unsigned long picohttpparser_microsecs = picohttpparser_total_benchmark();
   double performance = 1 - (double)picohttpparser_microsecs/(double)minhttp_microsecs;
-  if(performance < 0) performance = 1 -performance;
+  if(performance < 0) performance = 1 - performance;
   printf("total:\n");
   printf("\tminhttp performance compared to picotthpparser: %.2f%%\n", 100 * performance);
 
