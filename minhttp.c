@@ -47,27 +47,27 @@ static const char *token_char_map = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 
 static inline char* _mh_parse_path(char* data, char* data_end, char** string, uint32_t* string_len) {
   char* limit = *string_len ? MIN(data_end, data + *string_len) : data_end;
-  *string = data;
+  if(likely(string)) *string = data;
   for(; likely(data < limit && *data != ' ' && *data != '\t'); data++);
-  *string_len = data - *string;
+  if(likely(string_len)) *string_len = data - *string;
   return data;
 }
 
 static inline char* _mh_parse_method(char* data, char* data_end, char** method, uint8_t* method_len) {
   char* limit = *method_len ? MIN(data_end, data + *method_len) : data_end;
-  *method = data;
+  if(likely(method)) *method = data;
   for(; likely(data < limit && *data != ' ' && *data != '\t'); data++) {
     if(unlikely(!token_char_map[*data])) return NULL;
   }
-  *method_len = data - *method;
+  if(likely(method_len)) *method_len = data - *method;
   return data;
 }
 
 static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
   char* limit = *phrase_len ? MIN(data_end, data + *phrase_len) : data_end;
-  *phrase = data;
+  if(likely(phrase)) *phrase = data;
   for(; likely(data < limit && *data != '\r' && *data != '\n'); data++);
-  *phrase_len = data - *phrase;
+  if(likely(phrase_len)) *phrase_len = data - *phrase;
   return data;
 }
 
@@ -76,7 +76,7 @@ static inline char* _mh_parse_status_code(char* data, char* data_end, uint16_t* 
   if(unlikely(data_end - data < 3)) return NULL;
   // are digits valid?
   if(unlikely((data[0] < '1' || '5' < data[0]) || (data[1] < '0' || '9' < data[1]) || (data[2] < '0' || '9' < data[2]))) return NULL;
-  *status = 100 * (data[0] - '0') + 10 * (data[1] - '0') + data[2] - '0';
+  if(likely(status)) *status = 100 * (data[0] - '0') + 10 * (data[1] - '0') + data[2] - '0';
   return data + 3;
 }
 
@@ -91,11 +91,11 @@ static inline char* _mh_parse_version(char* data, char* data_end, mh_version* ve
   EXPECT_NO_CHECK('.');
   switch(*data) {
     case '0': {
-      *version = HTTP_1;
+      if(likely(version)) *version = HTTP_1;
       break;
     } 
     case '1': {
-      *version = HTTP_1_1;
+      if(likely(version)) *version = HTTP_1_1;
       break;
     }
     default: {
