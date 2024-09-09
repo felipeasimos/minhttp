@@ -46,7 +46,7 @@ static const char *token_char_map = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 static inline char* _mh_parse_path(char* data, char* data_end, char** string, uint32_t* string_len) {
-  char* limit = *string_len ? MIN(data_end, data + *string_len) : data_end;
+  char* limit = string_len && *string_len ? MIN(data_end, data + *string_len) : data_end;
   if(likely(string)) *string = data;
   for(; likely(data < limit && *data != ' ' && *data != '\t'); data++);
   if(likely(string_len)) *string_len = data - *string;
@@ -54,7 +54,7 @@ static inline char* _mh_parse_path(char* data, char* data_end, char** string, ui
 }
 
 static inline char* _mh_parse_method(char* data, char* data_end, char** method, uint8_t* method_len) {
-  char* limit = *method_len ? MIN(data_end, data + *method_len) : data_end;
+  char* limit = method && *method_len ? MIN(data_end, data + *method_len) : data_end;
   if(likely(method)) *method = data;
   for(; likely(data < limit && *data != ' ' && *data != '\t'); data++) {
     if(unlikely(!token_char_map[*data])) return NULL;
@@ -64,7 +64,7 @@ static inline char* _mh_parse_method(char* data, char* data_end, char** method, 
 }
 
 static inline char* _mh_parse_phrase(char* data, char* data_end, char** phrase, uint32_t* phrase_len) {
-  char* limit = *phrase_len ? MIN(data_end, data + *phrase_len) : data_end;
+  char* limit = phrase_len && *phrase_len ? MIN(data_end, data + *phrase_len) : data_end;
   if(likely(phrase)) *phrase = data;
   for(; likely(data < limit && *data != '\r' && *data != '\n'); data++);
   if(likely(phrase_len)) *phrase_len = data - *phrase;
